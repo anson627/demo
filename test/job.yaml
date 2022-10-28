@@ -1,0 +1,45 @@
+apiVersion: batch/v1
+kind: Job 
+metadata:
+  name: clusterloader2 
+  labels:
+    app: clusterloader2
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      serviceAccountName: clusteradmin 
+      restartPolicy: Never
+      nodeSelector:
+        agentpool: agentpool0 
+      containers:
+      - name: clusterloader2
+        image: largeclustere2e.azurecr.io/test/clusterloader2:v0.0.16
+        resources:
+          requests:
+            cpu: "1"
+            memory: "12Gi"
+          limits:
+            cpu: "1"
+            memory: "12Gi"
+        env:
+        - name: CL2_TEST_JOB_NAME
+          value: "staging-underlay-akstest-1019-1"
+        - name: CL2_TEST_CONFIG
+          value: "./akstest/deployment-churn.yaml"
+        - name: CL2_LOAD_TEST_THROUGHPUT
+          value: "100"
+        - name: CL2_PODS_PER_NODE
+          value: "5"
+        - name: CL2_NODES_PER_NAMESPACE
+          value: "40"
+        - name: CL2_DEPLOYMENT_SIZE
+          value: "100"
+        - name: CL2_POD_STARTUP_LATENCY_THRESHOLD
+          value: "150s"
+        - name: CL2_REPEATS
+          value: "3"
+        - name: CL2_PROMETHEUS_NODE_SELECTOR
+          value: "agentpool: agentpool0"
+        - name: CL2_PROMETHEUS_TOLERATE_MASTER
+          value: "true"
