@@ -2,12 +2,12 @@
 set -eo pipefail
 
 SUB=854c9ddb-fe9e-4aea-8d58-99ed88282881
-LOCATION=centraluseuap
-RESOURCE_GROUP=canary-underlay-test
-CLUSTER_NAME=canary-underlay-test-1024-1
-SYSTEM_VM_SIZE="Standard_D16S_v3"
-USER_VM_SIZE="Standard_D2_v3"
+LOCATION=westeurope
+RESOURCE_GROUP=prod-underlay-test
+CLUSTER_NAME=prod-underlay-test
+SYSTEM_VM_SIZE="Standard_D16_v3"
 SYSTEM_POOL_SIZE=5
+USER_VM_SIZE="Standard_D2_v3"
 USER_POOL_SIZE=999
 MAX_PODS=12
 NODE_POOL_PREFIX="agentpool"
@@ -18,7 +18,7 @@ GATEWAY_NAME=${CLUSTER_NAME}-gateway
 VNET=${CLUSTER_NAME}-net
 VNET_CIDR="10.0.0.0/8"
 VNET_NODES_CIDR="10.1.0.0/16"
-VNET_PODS_CIDR="10.4.0.0/14" 
+VNET_PODS_CIDR="10.4.0.0/14"
 SERVICE_CIDR="10.0.0.0/16"
 DNS_SERVICE_IP="10.0.0.10"
 

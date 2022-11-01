@@ -16,16 +16,7 @@ SYSTEM_POOL_NAME=${NODE_POOL_PREFIX}0
 
 if az aks show -g $RESOURCE_GROUP -n $CLUSTER_NAME ; then
   echo "cluster $CLUSTER_NAME already existed"
-  az aks update -g $RESOURCE_GROUP \
-    -n $CLUSTER_NAME \
-    --aks-custom-headers ControlPlaneUnderlay=hcp-underlay-intv2-eastus-cx-1 \
-    --load-balancer-backend-pool-type nodeIP \
-    --yes 
-else 
-# --load-balancer-backend-pool-type=nodeIP \
-#    --aks-custom-headers ControlPlaneUnderlay=hcp-underlay-intv2-eastus-cx-1 \
-#    --service-principal 91658ced-1b74-419e-a33f-081cc3152a19 \
-#    --client-secret s5p8Q~IGLCuBUyaSZRvnaI5o33F3HjUTNUMYzcLF \
+else
   az aks create -l $LOCATION \
     -g $RESOURCE_GROUP \
     -n $CLUSTER_NAME \
