@@ -10,13 +10,15 @@
     <array>
       <string>/bin/bash</string>
       <string>-c</string>
-      <string>route delete -host 20.81.17.105 & route add -host 20.81.17.105 -interface utun3</string> 
+      <string>date && route delete -host 20.81.17.105 && route add -host 20.81.17.105 -interface utun3</string>
     </array>
-    <key>ThrottleInterval</key>
-    <integer>10</integer>
     <key>WatchPaths</key>
     <array>
-      <string>/Library/Logs/PaloAltoNetworks/GlobalProtect/network/config</string> 
+      <string>/Library/Logs/PaloAltoNetworks/GlobalProtect/network/config/</string>
     </array>
+    <key>StandardOutPath</key>
+    <string>/var/log/route.log</string>
+    <key>StandardErrorPath</key>
+    <string>/var/log/route.log</string>
   </dict>
 </plist>
