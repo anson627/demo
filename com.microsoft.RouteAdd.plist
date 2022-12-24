@@ -10,7 +10,7 @@
     <array>
       <string>/bin/bash</string>
       <string>-c</string>
-      <string>date && route delete -host 20.81.17.105 && route add -host 20.81.17.105 -interface utun3</string>
+      <string>date && route delete -host 20.85.78.210 && route add -host 20.85.78.210 -interface utun3 && route delete -host 20.102.11.73 && route add -host 20.102.11.73 -interface utun3</string>
     </array>
     <key>WatchPaths</key>
     <array>
