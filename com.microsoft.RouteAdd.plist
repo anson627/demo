@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>KeepAlive</key>
+    <false/>
+    <key>Label</key>
+    <string>come.microsoft.RouteAdd</string>
+    <key>ProgramArguments</key>
+    <array>
+      <string>/bin/bash</string>
+      <string>-c</string>
+      <string>date; route delete -host 20.75.99.116; route add -host 20.75.99.116 -interface utun3; route delete -host 20.124.171.67; route add -host 20.124.171.67 -interface utun3</string>
+    </array>
+    <key>WatchPaths</key>
+    <array>
+      <string>/Library/Logs/PaloAltoNetworks/GlobalProtect/network/config/</string>
+    </array>
+    <key>StandardOutPath</key>
+    <string>/var/log/route.log</string>
+    <key>StandardErrorPath</key>
+    <string>/var/log/route.log</string>
+  </dict>
+</plist>
