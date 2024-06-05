@@ -1,0 +1,5 @@
+nfd:
+  worker:
+      sources:
+        pci:
+          deviceClassWhitelist: ["10de"]
