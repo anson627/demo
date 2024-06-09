@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: client-pod
+spec:
+  restartPolicy: OnFailure
+  containers:
+  - image: mellanox/cuda-perftest
+    name: rdma-gpu-test-ctr
+    securityContext:
+      capabilities:
+        add: [ "IPC_LOCK" ]
+    resources:
+      limits:
+        nvidia.com/gpu: 1
+      requests:
+        nvidia.com/gpu: 1

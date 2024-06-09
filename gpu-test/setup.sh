@@ -11,7 +11,6 @@ GPU_POOL_SIZE=3
 GPU_VM_SIZE=Standard_NC4as_T4_v3
 
 az account set -s $SUBSCRIPTION
-az configure --defaults group=$RESOURCE_GROUP
 if az group show -n $RESOURCE_GROUP &>/dev/null; then
     echo "Resource group already exists."
 else
