@@ -1,0 +1,18 @@
+nfd:
+  enabled: true
+sriovNetworkOperator:
+  enabled: false
+# NicClusterPolicy CR values:
+deployCR: true
+ofedDriver:
+  deploy: true
+nvPeerDriver:
+  deploy: false
+rdmaSharedDevicePlugin:
+  deploy: true
+  resources:
+    - name: rdma_shared_device_a
+      ifNames: [ens1f0]
+
+sriovDevicePlugin:
+  deploy: false

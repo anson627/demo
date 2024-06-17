@@ -5,6 +5,9 @@ set -eo pipefail
 echo "Checking the gpu nodes based on node feature discovery ..."
 kubectl get nodes -o json | jq '.items[] | select(.metadata.labels | has("feature.node.kubernetes.io/pci-10de.present")) | .metadata.name'
 
+echo "Checking the status of the nvidia-device-plugin ..."
+kubectl get nodes -o json | jq '.items[] | select(.metadata.labels | has("feature.node.kubernetes.io/pci-15b3.present")) | .metadata.name'
+
 echo "Check the status of nvidia operator ..."
 kubectl logs -n gpu-operator ds/nvidia-operator-validator -c nvidia-operator-validator
 

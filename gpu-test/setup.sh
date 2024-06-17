@@ -7,8 +7,8 @@ LOCATION=eastus
 RESOURCE_GROUP=gpu-test
 CLUSTER_NAME=operator-test
 GPU_POOL_NAME=gpupool
-GPU_POOL_SIZE=3
-GPU_VM_SIZE=Standard_NC4as_T4_v3
+GPU_POOL_SIZE=2
+GPU_VM_SIZE=Standard_HB120-16rs_v3
 
 az account set -s $SUBSCRIPTION
 if az group show -n $RESOURCE_GROUP &>/dev/null; then
