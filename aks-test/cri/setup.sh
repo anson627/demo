@@ -2,26 +2,15 @@
 
 set -eo pipefail
 
-# ACS Test with H100
-# SUBSCRIPTION=8ecadfc9-d1a3-4ea4-b844-0d9f87e4d7c8
-# LOCATION=centraluseuap
-# USER_VM_SIZE=Standard_ND96isr_H100_v5
-
-# Dataplane Developer with A100
-# SUBSCRIPTION=8643025a-c059-4a48-85d0-d76f51d63a74
-# LOCATION=southcentralus
-# USER_VM_SIZE=Standard_ND96amsr_A100_v4
-
 SUBSCRIPTION=137f0351-8235-42a6-ac7a-6b46be2d21c7
+RESOURCE_GROUP=cri-test
 LOCATION=eastus2
-USER_VM_SIZE=Standard_D8ds_v5
-
-RESOURCE_GROUP=cni-test
-CLUSTER_NAME=cni-test
+CLUSTER_NAME=cri-test
 SYSTEM_POOL_NAME=system
 SYSTEM_VM_SIZE=Standard_D8ds_v5
 SYSTEM_POOL_SIZE=3
 USER_POOL_NAME=user
+USER_VM_SIZE=Standard_D8ds_v5
 USER_POOL_SIZE=1
 
 az account set -s ${SUBSCRIPTION}
@@ -33,9 +22,9 @@ else
 fi
 
 if az aks show -g ${RESOURCE_GROUP} -n ${CLUSTER_NAME} &>/dev/null; then
-    echo "Cluster already exists."
+    echo "Managed cluster already exists."
 else
-    echo "Cluster does not exist. Creating ..."
+    echo "Managed cluster does not exist. Creating ..."
     az aks create -l ${LOCATION} \
         -g ${RESOURCE_GROUP} \
         -n ${CLUSTER_NAME} \
@@ -43,7 +32,8 @@ else
         --nodepool-name ${SYSTEM_POOL_NAME} \
         --node-vm-size ${SYSTEM_VM_SIZE} \
         --node-count ${SYSTEM_POOL_SIZE} \
-        --yes
+        --node-osdisk-type Ephemeral \
+        --network-plugin azure
 fi
 
 if az aks nodepool show --resource-group ${RESOURCE_GROUP} --cluster-name ${CLUSTER_NAME} --name ${USER_POOL_NAME} &>/dev/null; then
@@ -56,8 +46,7 @@ else
         --name ${USER_POOL_NAME} \
         --node-vm-size ${USER_VM_SIZE} \
         --node-count ${USER_POOL_SIZE} \
-        --node-taints nvidia.com/gpu=present:NoSchedule \
-        --skip-gpu-driver-install
+        --node-osdisk-type Ephemeral
 fi
 
 az aks get-credentials --resource-group ${RESOURCE_GROUP} \
