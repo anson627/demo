@@ -33,7 +33,8 @@ else
         --node-vm-size ${SYSTEM_VM_SIZE} \
         --node-count ${SYSTEM_POOL_SIZE} \
         --node-osdisk-type Ephemeral \
-        --network-plugin azure
+        --network-plugin azure \
+        --network-plugin-mode overlay
 fi
 
 if az aks nodepool show --resource-group ${RESOURCE_GROUP} --cluster-name ${CLUSTER_NAME} --name ${USER_POOL_NAME} &>/dev/null; then
