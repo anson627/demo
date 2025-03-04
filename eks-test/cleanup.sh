@@ -1,0 +1,1 @@
+eksctl delete cluster -n cri-test --region=us-west-1
