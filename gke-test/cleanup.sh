@@ -1,0 +1,1 @@
+gcloud container clusters delete cni-test --zone=us-west1-a
