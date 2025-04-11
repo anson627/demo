@@ -2,19 +2,20 @@
 
 set -eo pipefail
 
-SUBSCRIPTION=137f0351-8235-42a6-ac7a-6b46be2d21c7
-RESOURCE_GROUP=cni-test
-LOCATION=eastus2
-CLUSTER_NAME=cni-test
+SUBSCRIPTION=c0d4b923-b5ea-4f8f-9b56-5390a9bf2248
+RESOURCE_GROUP=general-test
+LOCATION=southcentralus
+CLUSTER_NAME=general-test
 SYSTEM_POOL_NAME=system
-SYSTEM_VM_SIZE=Standard_D8ds_v5
+SYSTEM_VM_SIZE=Standard_D8ds_v6
 SYSTEM_POOL_SIZE=3
 USER_POOL_NAME=user
-USER_VM_SIZE=Standard_D8ds_v5
-USER_POOL_SIZE=1
+USER_VM_SIZE=Standard_D16ds_v6
+USER_POOL_SIZE=3
 VNET_CIDR="10.0.0.0/8"
-VNET_NODES_CIDR="10.1.0.0/16"
-VNET_PODS_CIDR="10.4.0.0/14"
+VNET_NODES_CIDR="10.1.0.0/19"
+VNET_PODS_CIDR="10.16.0.0/12"
+VNET_APISERVER_CIDR="10.240.0.0/28"
 
 az account set -s ${SUBSCRIPTION}
 if az group show -n ${RESOURCE_GROUP} &>/dev/null; then
@@ -23,6 +24,17 @@ else
     echo "Resource group does not exist. Creating ..."
     az group create -l ${LOCATION} -n ${RESOURCE_GROUP}
 fi
+
+
+IDENITITY_NAME=${CLUSTER_NAME}-identity
+if az identity show -g ${RESOURCE_GROUP} -n ${IDENITITY_NAME} &>/dev/null; then
+    echo "Managed identity already exists."
+else
+    echo "Managed identity does not exist. Creating ..."
+    az identity create -g ${RESOURCE_GROUP} --name ${IDENITITY_NAME}
+fi
+IDENTITY_ID=$(az identity show -g ${RESOURCE_GROUP} -n ${IDENITITY_NAME} | jq -r '.id')
+IDENTITY_CLIENT_ID=$(az identity show -g ${RESOURCE_GROUP} -n ${IDENITITY_NAME} | jq -r '.clientId')
 
 IP_NAME=${CLUSTER_NAME}-ip
 if az network public-ip show -g ${RESOURCE_GROUP} -n ${IP_NAME} &>/dev/null; then
@@ -67,6 +79,12 @@ else
         --nat-gateway ${NAT_GATEWAY_ID}
 fi
 NODE_SUBNET_ID=$(az network vnet subnet show -g ${RESOURCE_GROUP} --vnet-name ${VNET_NAME} --name nodes | jq -r '.id')
+if [ "$(az role assignment list --scope $NODE_SUBNET_ID --assignee ${IDENTITY_CLIENT_ID} --role "Network Contributor" | jq '. | length')" -gt 0 ]; then
+    echo "Role assignment already exists."
+else
+    echo "Role assignment does not exist. Creating ..."
+    az role assignment create --scope $NODE_SUBNET_ID --role "Network Contributor" --assignee ${IDENTITY_CLIENT_ID}
+fi
 
 if az network vnet subnet show -g ${RESOURCE_GROUP} --vnet-name ${VNET_NAME} --name pods &>/dev/null; then
     echo "Pods subnet already exists."
@@ -79,6 +97,30 @@ else
         --nat-gateway ${NAT_GATEWAY_ID}
 fi
 POD_SUBNET_ID=$(az network vnet subnet show -g ${RESOURCE_GROUP} --vnet-name ${VNET_NAME} --name pods | jq -r '.id')
+if [ "$(az role assignment list --scope $POD_SUBNET_ID --assignee ${IDENTITY_CLIENT_ID} --role "Network Contributor" | jq '. | length')" -gt 0 ]; then
+    echo "Role assignment already exists."
+else
+    echo "Role assignment does not exist. Creating ..."
+    az role assignment create --scope $POD_SUBNET_ID --role "Network Contributor" --assignee ${IDENTITY_CLIENT_ID}
+fi
+
+if az network vnet subnet show -g ${RESOURCE_GROUP} --vnet-name ${VNET_NAME} --name apiserver &>/dev/null; then
+    echo "APIServer subnet already exists."
+else
+    echo "APIServer subnet does not exist. Creating ..."
+    az network vnet subnet create -g ${RESOURCE_GROUP} \
+        --vnet-name ${VNET_NAME} \
+        --name apiserver \
+        --address-prefixes ${VNET_APISERVER_CIDR} \
+        --nat-gateway ${NAT_GATEWAY_ID}
+fi
+APISERVER_SUBNET_ID=$(az network vnet subnet show -g ${RESOURCE_GROUP} --vnet-name ${VNET_NAME} --name apiserver | jq -r '.id')
+if [ "$(az role assignment list --scope $APISERVER_SUBNET_ID --assignee ${IDENTITY_CLIENT_ID} --role "Network Contributor" | jq '. | length')" -gt 0 ]; then
+    echo "Role assignment already exists."
+else
+    echo "Role assignment does not exist. Creating ..."
+    az role assignment create --scope $APISERVER_SUBNET_ID --role "Network Contributor" --assignee ${IDENTITY_CLIENT_ID}
+fi
 
 if az aks show -g ${RESOURCE_GROUP} -n ${CLUSTER_NAME} &>/dev/null; then
     echo "Managed cluster already exists."
@@ -88,12 +130,16 @@ else
         -g ${RESOURCE_GROUP} \
         -n ${CLUSTER_NAME} \
         --tier standard \
+        --assign-identity ${IDENTITY_ID} \
         --nodepool-name ${SYSTEM_POOL_NAME} \
         --node-vm-size ${SYSTEM_VM_SIZE} \
         --node-count ${SYSTEM_POOL_SIZE} \
+        --node-osdisk-type Ephemeral \
         --network-plugin azure \
         --outbound-type userAssignedNATGateway \
+        --enable-apiserver-vnet-integration \
         --vnet-subnet-id ${NODE_SUBNET_ID} \
+        --apiserver-subnet-id ${APISERVER_SUBNET_ID} \
         --pod-subnet-id ${POD_SUBNET_ID} \
         --pod-ip-allocation-mode StaticBlock
 fi
@@ -108,6 +154,7 @@ else
         --name ${USER_POOL_NAME} \
         --node-vm-size ${USER_VM_SIZE} \
         --node-count ${USER_POOL_SIZE} \
+        --node-osdisk-type Ephemeral \
         --vnet-subnet-id ${NODE_SUBNET_ID} \
         --pod-subnet-id ${POD_SUBNET_ID} \
         --pod-ip-allocation-mode StaticBlock
