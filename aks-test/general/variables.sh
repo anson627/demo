@@ -1,0 +1,7 @@
+SUBSCRIPTION=854c9ddb-fe9e-4aea-8d58-99ed88282881
+RESOURCE_GROUP=anson-test-$(openssl rand -hex 4)
+LOCATION=eastus2
+SYSTEM_VM_SIZE=Standard_D8ds_v5
+SYSTEM_POOL_SIZE=3
+USER_VM_SIZE=Standard_D16ds_v5
+USER_POOL_SIZE=3
