@@ -1,5 +1,5 @@
 SUBSCRIPTION=854c9ddb-fe9e-4aea-8d58-99ed88282881
-RESOURCE_GROUP=anson-test-$(openssl rand -hex 4)
+RESOURCE_GROUP=general-test
 LOCATION=eastus2
 SYSTEM_VM_SIZE=Standard_D8ds_v5
 SYSTEM_POOL_SIZE=3

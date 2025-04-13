@@ -17,9 +17,8 @@ if az group show -n ${RESOURCE_GROUP} &>/dev/null; then
     echo "Resource group already exists."
 else
     echo "Resource group does not exist. Creating ..."
-    az group create -l ${LOCATION} -n ${RESOURCE_GROUP}
+    az group create -l ${LOCATION} -n ${RESOURCE_GROUP} --tags SkipAKSCluster=1
 fi
-
 
 IDENITITY_NAME=${CLUSTER_NAME}-identity
 if az identity show -g ${RESOURCE_GROUP} -n ${IDENITITY_NAME} &>/dev/null; then
