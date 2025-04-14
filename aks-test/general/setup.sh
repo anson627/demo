@@ -5,10 +5,8 @@ set -eo pipefail
 source variables.sh
 
 CLUSTER_NAME=streaming-test
-SYSTEM_POOL_NAME=system
-USER_POOL_NAME=user
 VNET_CIDR="10.0.0.0/8"
-VNET_NODES_CIDR="10.1.0.0/19"
+VNET_NODES_CIDR="10.1.0.0/18"
 VNET_PODS_CIDR="10.16.0.0/12"
 VNET_APISERVER_CIDR="10.240.0.0/28"
 
@@ -125,9 +123,10 @@ else
         -n ${CLUSTER_NAME} \
         --tier standard \
         --assign-identity ${IDENTITY_ID} \
-        --nodepool-name ${SYSTEM_POOL_NAME} \
+        --nodepool-name system \
         --node-vm-size ${SYSTEM_VM_SIZE} \
         --node-count ${SYSTEM_POOL_SIZE} \
+        --max-pods 15 \
         --network-plugin azure \
         --outbound-type userAssignedNATGateway \
         --vnet-subnet-id ${NODE_SUBNET_ID} \
@@ -136,23 +135,27 @@ else
         --enable-apiserver-vnet-integration \
         --apiserver-subnet-id ${APISERVER_SUBNET_ID} \
         --custom-configuration ./custom-config.json \
-        --aks-custom-headers ControlPlaneUnderlay=hcp-underlay-eastus2-cx-382,AKSHTTPCustomFeatures=OverrideControlplaneResources,OverrideControlplaneResources=W3siY29udGFpbmVyTmFtZSI6Imt1YmUtYXBpc2VydmVyIiwiY3B1TGltaXQiOiIzMCIsImNwdVJlcXVlc3QiOiIyNyIsIm1lbW9yeUxpbWl0IjoiNjRHaSIsIm1lbW9yeVJlcXVlc3QiOiI2NEdpIiwiZ29tYXhwcm9jcyI6MzB9XSAg
+        --aks-custom-headers OverrideControlplaneResources=W3siY29udGFpbmVyTmFtZSI6Imt1YmUtYXBpc2VydmVyIiwiY3B1TGltaXQiOiIzMCIsImNwdVJlcXVlc3QiOiIyNyIsIm1lbW9yeUxpbWl0IjoiNjRHaSIsIm1lbW9yeVJlcXVlc3QiOiI2NEdpIiwiZ29tYXhwcm9jcyI6MzB9XSAg,ControlPlaneUnderlay=hcp-underlay-eastus2-cx-382,AKSHTTPCustomFeatures=OverrideControlplaneResources
 fi
 
-if az aks nodepool show --resource-group ${RESOURCE_GROUP} --cluster-name ${CLUSTER_NAME} --name ${USER_POOL_NAME} &>/dev/null; then
-    echo "User pool already exists."
-else
-    echo "User pool does not exist. Creating ..."
-    az aks nodepool add \
-        --resource-group ${RESOURCE_GROUP} \
-        --cluster-name ${CLUSTER_NAME} \
-        --name ${USER_POOL_NAME} \
-        --node-vm-size ${USER_VM_SIZE} \
-        --node-count ${USER_POOL_SIZE} \
-        --vnet-subnet-id ${NODE_SUBNET_ID} \
-        --pod-subnet-id ${POD_SUBNET_ID} \
-        --pod-ip-allocation-mode StaticBlock
-fi
+for i in $(seq 1 ${USER_POOL_COUNT}); do
+    USER_POOL_NAME=user${i}
+    if az aks nodepool show --resource-group ${RESOURCE_GROUP} --cluster-name ${CLUSTER_NAME} --name ${USER_POOL_NAME} &>/dev/null; then
+        echo "User pool ${i} already exists."
+    else
+        echo "User pool ${i} does not exist. Creating ..."
+        az aks nodepool add \
+            --resource-group ${RESOURCE_GROUP} \
+            --cluster-name ${CLUSTER_NAME} \
+            --name ${USER_POOL_NAME} \
+            --node-vm-size ${USER_VM_SIZE} \
+            --node-count ${USER_POOL_SIZE} \
+            --max-pods 15 \
+            --vnet-subnet-id ${NODE_SUBNET_ID} \
+            --pod-subnet-id ${POD_SUBNET_ID} \
+            --pod-ip-allocation-mode StaticBlock
+    fi
+done
 
 az aks get-credentials --resource-group ${RESOURCE_GROUP} \
     --name ${CLUSTER_NAME} \
