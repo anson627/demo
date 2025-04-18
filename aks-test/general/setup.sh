@@ -4,7 +4,6 @@ set -eo pipefail
 
 source variables.sh
 
-CLUSTER_NAME=streaming-test
 VNET_CIDR="10.0.0.0/8"
 VNET_NODES_CIDR="10.1.0.0/18"
 VNET_PODS_CIDR="10.16.0.0/12"
@@ -118,6 +117,7 @@ if az aks show -g ${RESOURCE_GROUP} -n ${CLUSTER_NAME} &>/dev/null; then
     echo "Managed cluster already exists."
 else
     echo "Managed cluster does not exist. Creating ..."
+    # --network-dataplane cilium \
     az aks create -l ${LOCATION} \
         -g ${RESOURCE_GROUP} \
         -n ${CLUSTER_NAME} \

@@ -1,0 +1,18 @@
+# Dataplane Developer with A100
+SUBSCRIPTION=8643025a-c059-4a48-85d0-d76f51d63a74
+LOCATION=southcentralus
+USER_VM_SIZE=Standard_ND96amsr_A100_v4
+
+
+# ACS Test with H100
+# SUBSCRIPTION=8ecadfc9-d1a3-4ea4-b844-0d9f87e4d7c8
+# LOCATION=centraluseuap
+# USER_VM_SIZE=Standard_ND96isr_H100_v5
+
+RESOURCE_GROUP=gpu-test
+CLUSTER_NAME=infiniband-rdma
+SYSTEM_POOL_NAME=system
+SYSTEM_VM_SIZE=Standard_D8ds_v5
+SYSTEM_POOL_SIZE=3
+USER_POOL_NAME=user
+USER_POOL_SIZE=1

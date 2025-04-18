@@ -2,27 +2,7 @@
 
 set -eo pipefail
 
-# ACS Test with H100
-# SUBSCRIPTION=8ecadfc9-d1a3-4ea4-b844-0d9f87e4d7c8
-# LOCATION=centraluseuap
-# USER_VM_SIZE=Standard_ND96isr_H100_v5
-
-# Dataplane Developer with A100
-# SUBSCRIPTION=8643025a-c059-4a48-85d0-d76f51d63a74
-# LOCATION=southcentralus
-# USER_VM_SIZE=Standard_ND96amsr_A100_v4
-
-SUBSCRIPTION=137f0351-8235-42a6-ac7a-6b46be2d21c7
-LOCATION=eastus2
-USER_VM_SIZE=Standard_D8ds_v5
-
-RESOURCE_GROUP=cni-test
-CLUSTER_NAME=cni-test
-SYSTEM_POOL_NAME=system
-SYSTEM_VM_SIZE=Standard_D8ds_v5
-SYSTEM_POOL_SIZE=3
-USER_POOL_NAME=user
-USER_POOL_SIZE=1
+source variables.sh
 
 az account set -s ${SUBSCRIPTION}
 if az group show -n ${RESOURCE_GROUP} &>/dev/null; then
@@ -56,7 +36,6 @@ else
         --name ${USER_POOL_NAME} \
         --node-vm-size ${USER_VM_SIZE} \
         --node-count ${USER_POOL_SIZE} \
-        --node-taints nvidia.com/gpu=present:NoSchedule \
         --skip-gpu-driver-install
 fi
 
