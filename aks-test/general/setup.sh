@@ -5,7 +5,7 @@ set -eo pipefail
 source variables.sh
 
 VNET_CIDR="10.0.0.0/8"
-VNET_NODES_CIDR="10.1.0.0/18"
+VNET_NODES_CIDR="10.1.0.0/16"
 VNET_PODS_CIDR="10.16.0.0/12"
 VNET_APISERVER_CIDR="10.240.0.0/28"
 
