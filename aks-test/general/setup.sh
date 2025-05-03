@@ -19,9 +19,9 @@ fi
 
 IDENITITY_NAME=${CLUSTER_NAME}-identity
 if az identity show -g ${RESOURCE_GROUP} -n ${IDENITITY_NAME} &>/dev/null; then
-    echo "Managed identity already exists."
+    echo "Identity already exists."
 else
-    echo "Managed identity does not exist. Creating ..."
+    echo "Identity does not exist. Creating ..."
     az identity create -g ${RESOURCE_GROUP} --name ${IDENITITY_NAME}
 fi
 IDENTITY_ID=$(az identity show -g ${RESOURCE_GROUP} -n ${IDENITITY_NAME} | jq -r '.id')
@@ -114,9 +114,9 @@ else
 fi
 
 if az aks show -g ${RESOURCE_GROUP} -n ${CLUSTER_NAME} &>/dev/null; then
-    echo "Managed cluster already exists."
+    echo "Cluster already exists."
 else
-    echo "Managed cluster does not exist. Creating ..."
+    echo "Cluster does not exist. Creating ..."
     # --network-dataplane cilium \
     az aks create -l ${LOCATION} \
         -g ${RESOURCE_GROUP} \
@@ -126,7 +126,7 @@ else
         --nodepool-name system \
         --node-vm-size ${SYSTEM_VM_SIZE} \
         --node-count ${SYSTEM_POOL_SIZE} \
-        --max-pods 15 \
+        --max-pods 47 \
         --network-plugin azure \
         --outbound-type userAssignedNATGateway \
         --vnet-subnet-id ${NODE_SUBNET_ID} \
@@ -150,7 +150,7 @@ for i in $(seq 1 ${USER_POOL_COUNT}); do
             --name ${USER_POOL_NAME} \
             --node-vm-size ${USER_VM_SIZE} \
             --node-count ${USER_POOL_SIZE} \
-            --max-pods 15 \
+            --max-pods 47 \
             --vnet-subnet-id ${NODE_SUBNET_ID} \
             --pod-subnet-id ${POD_SUBNET_ID} \
             --pod-ip-allocation-mode StaticBlock
