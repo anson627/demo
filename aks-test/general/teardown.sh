@@ -20,3 +20,8 @@ for i in $(seq 1 ${USER_POOL_COUNT}); do
         echo "User pool ${i} already scaled down"
     fi
 done
+
+az aks delete \
+    --resource-group ${RESOURCE_GROUP} \
+    --name ${CLUSTER_NAME} \
+    --yes
