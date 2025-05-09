@@ -3,7 +3,8 @@
         "kube-apiserver": {
             "image": "mcr.microsoft.com/oss/kubernetes/kube-apiserver:v1.31.7-streaminglistv1",
             "config": {
-                "--feature-gates": "StreamingCollectionEncodingToProtobuf=true,StreamingCollectionEncodingToJSON=true"
+                "--feature-gates": "StreamingCollectionEncodingToProtobuf=true,StreamingCollectionEncodingToJSON=true",
+                "--watch-cache-sizes": "nodes#5000,pods#50000,endpoints#50000"
             }
         }
     }
