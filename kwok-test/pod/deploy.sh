@@ -1,10 +1,10 @@
 #!/bin/bash
 
-NAMESPACE_COUNT=100
-DEPLOYMENTS_PER_NAMESPACE=10
-REPLICAS_PER_DEPLOYMENT=200
+set -eo pipefail
 
-TEMP_FILE=$(mktemp)
+NAMESPACE_COUNT=2
+DEPLOYMENTS_PER_NAMESPACE=2
+REPLICAS_PER_DEPLOYMENT=30
 
 for i in $(seq 1 $NAMESPACE_COUNT); do
   NAMESPACE="test-$i"
@@ -13,7 +13,8 @@ for i in $(seq 1 $NAMESPACE_COUNT); do
   for j in $(seq 1 $DEPLOYMENTS_PER_NAMESPACE); do
     DEPLOYMENT_NAME="test-$j"
 
-    cat > $TEMP_FILE << EOF
+    tmp_file="/tmp/kwok/pods-$i-$j.yaml"
+    cat > $tmp_file << EOF
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -38,8 +39,6 @@ spec:
                 operator: In
                 values:
                 - kwok
-      # A taints was added to an automatically created Node.
-      # You can remove taints of Node or add this tolerations.
       tolerations:
       - key: "kwok.x-k8s.io/node"
         operator: "Exists"
@@ -47,18 +46,12 @@ spec:
       containers:
       - name: fake-container
         image: fake-image
+        resources:
+          requests:
+            cpu: 3
 EOF
 
-    kubectl apply -f $TEMP_FILE
-    echo "Created deployment $DEPLOYMENT_NAME in namespace $NAMESPACE ($i/$NAMESPACE_COUNT, $j/$DEPLOYMENTS_PER_NAMESPACE)"
+    kubectl apply -f $tmp_file
+    rm $tmp_file
   done
 done
-
-rm $TEMP_FILE
-
-TOTAL_PODS=$((NAMESPACE_COUNT * DEPLOYMENTS_PER_NAMESPACE * REPLICAS_PER_DEPLOYMENT))
-echo "Completed! Created:"
-echo "- $NAMESPACE_COUNT namespaces"
-echo "- $DEPLOYMENTS_PER_NAMESPACE deployments per namespace (total: $((NAMESPACE_COUNT * DEPLOYMENTS_PER_NAMESPACE)) deployments)"
-echo "- $REPLICAS_PER_DEPLOYMENT replicas per deployment"
-echo "- $TOTAL_PODS total pods"

@@ -2,8 +2,8 @@
 
 set -e
 
-NODE_COUNT=5000
-BATCH_SIZE=200
+NODE_COUNT=10
+BATCH_SIZE=1
 
 kubectl apply -f kwok.yaml
 if [ $? -ne 0 ]; then
@@ -18,8 +18,6 @@ if [ $? -ne 0 ]; then
 fi
 
 TOTAL_BATCHES=$((NODE_COUNT / BATCH_SIZE + (NODE_COUNT % BATCH_SIZE > 0)))
-echo "Creating $NODE_COUNT nodes in $TOTAL_BATCHES batches of $BATCH_SIZE nodes each"
-
 for i in $(seq 1 $TOTAL_BATCHES); do
   start_idx=$(( (i-1) * BATCH_SIZE + 1 ))
   end_idx=$((i * BATCH_SIZE))
@@ -28,13 +26,13 @@ for i in $(seq 1 $TOTAL_BATCHES); do
     end_idx=$NODE_COUNT
   fi
 
-  echo "Processing batch $i/$TOTAL_BATCHES (nodes $start_idx to $end_idx)"
+  echo "Creating batch $i/$TOTAL_BATCHES (nodes $start_idx to $end_idx)"
 
-  batch_file="/tmp/kwok-nodes-batch-$i.yaml"
-  > $batch_file # Clear/create the file
+  tmp_file="/tmp/kwok/nodes-$i.yaml"
+  > $tmp_file
 
   for j in $(seq $start_idx $end_idx); do
-    cat >> $batch_file << EOF
+    cat >> $tmp_file << EOF
 ---
 apiVersion: v1
 kind: Node
@@ -46,13 +44,14 @@ metadata:
     beta.kubernetes.io/arch: amd64
     beta.kubernetes.io/os: linux
     kubernetes.io/arch: amd64
-    kubernetes.io/hostname: kwok-node-$j
+    kubernetes.io/hostname: test-$j
     kubernetes.io/os: linux
     kubernetes.io/role: agent
     node-role.kubernetes.io/agent: ""
     type: kwok
-  name: kwok-node-$j
+  name: test-$j
 spec:
+  providerID: kwok://test-$j
   taints:
   - effect: NoSchedule
     key: kwok.x-k8s.io/node
@@ -81,13 +80,11 @@ status:
 EOF
   done
 
-  kubectl apply -f $batch_file
+  kubectl apply -f $tmp_file
   if [ $? -ne 0 ]; then
     echo "Failed to create nodes in batch $batch"
     exit 1
   fi
 
-  rm $batch_file
+  rm $tmp_file
 done
-
-echo "Successfully created $NODE_COUNT nodes"

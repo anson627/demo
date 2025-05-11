@@ -10,9 +10,7 @@ if [ "$NAMESPACE_COUNT" -eq 0 ]; then
   exit 0
 fi
 
-for NAMESPACE in $TEST_NAMESPACES; do
-  kubectl delete namespace $NAMESPACE --wait=false
+for namespace in $TEST_NAMESPACES; do
+  kubectl delete namespace $namespace --wait=false
 done
 
-echo "Deletion commands issued for all $COUNT namespaces."
-echo "To check status: kubectl get namespaces | grep test-"
