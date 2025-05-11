@@ -53,4 +53,4 @@ for namespace in $TEST_NAMESPACES; do
   printf "%-20s | %8s | %8s | %8s | %8s | %8s\n" "$namespace" "$running_pods" "$pending_pods" "$failed_pods" "$completed_pods"
 done
 
-printf "%-20s | %8s | %8s | %8s | %8s | %8s\n" "Total" "$total_running_pods" "$total_pending_pods" "$total_failed_pods" "$total_completed_pods"
+printf "%-20s | %8s | %8s | %8s | %8s | %8s\n" "total" "$total_running_pods" "$total_pending_pods" "$total_failed_pods" "$total_completed_pods"

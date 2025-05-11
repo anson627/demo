@@ -32,52 +32,9 @@ for i in $(seq 1 $TOTAL_BATCHES); do
   > $tmp_file
 
   for j in $(seq $start_idx $end_idx); do
-    cat >> $tmp_file << EOF
----
-apiVersion: v1
-kind: Node
-metadata:
-  annotations:
-    node.alpha.kubernetes.io/ttl: "0"
-    kwok.x-k8s.io/node: fake
-  labels:
-    beta.kubernetes.io/arch: amd64
-    beta.kubernetes.io/os: linux
-    kubernetes.io/arch: amd64
-    kubernetes.io/hostname: test-$j
-    kubernetes.io/os: linux
-    kubernetes.io/role: agent
-    node-role.kubernetes.io/agent: ""
-    type: kwok
-  name: test-$j
-spec:
-  providerID: kwok://test-$j
-  taints:
-  - effect: NoSchedule
-    key: kwok.x-k8s.io/node
-    value: fake
-status:
-  allocatable:
-    cpu: 32
-    memory: 256Gi
-    pods: 110
-  capacity:
-    cpu: 32
-    memory: 256Gi
-    pods: 110
-  nodeInfo:
-    architecture: amd64
-    bootID: ""
-    containerRuntimeVersion: ""
-    kernelVersion: ""
-    kubeProxyVersion: fake
-    kubeletVersion: fake
-    machineID: ""
-    operatingSystem: linux
-    osImage: ""
-    systemUUID: ""
-  phase: Running
-EOF
+    node_name="test-$j"
+    template=$(cat node.yaml)
+    echo "$template" | sed "s/<NODE_NAME>/$node_name/g" >> $tmp_file
   done
 
   kubectl apply -f $tmp_file

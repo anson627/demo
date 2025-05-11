@@ -1,0 +1,47 @@
+---
+apiVersion: v1
+kind: Node
+metadata:
+  annotations:
+    node.alpha.kubernetes.io/ttl: "0"
+    kwok.x-k8s.io/node: fake
+  labels:
+    beta.kubernetes.io/arch: amd64
+    beta.kubernetes.io/os: linux
+    kubernetes.io/arch: amd64
+    kubernetes.io/hostname: <NODE_NAME>
+    kubernetes.io/os: linux
+    kubernetes.io/role: agent
+    node-role.kubernetes.io/agent: ""
+    type: kwok
+    nvidia.com/gpu: "true"
+  name: <NODE_NAME>
+spec:
+  providerID: kwok://<NODE_NAME>
+  taints:
+  - effect: NoSchedule
+    key: kwok.x-k8s.io/node
+    value: fake
+status:
+  allocatable:
+    cpu: 32
+    memory: 256Gi
+    pods: 110
+    nvidia.com/gpu: "8"
+  capacity:
+    cpu: 32
+    memory: 256Gi
+    pods: 110
+    nvidia.com/gpu: "8"
+  nodeInfo:
+    architecture: amd64
+    bootID: ""
+    containerRuntimeVersion: ""
+    kernelVersion: ""
+    kubeProxyVersion: fake
+    kubeletVersion: fake
+    machineID: ""
+    operatingSystem: linux
+    osImage: ""
+    systemUUID: ""
+  phase: Running

@@ -3,54 +3,25 @@
 set -eo pipefail
 
 NAMESPACE_COUNT=2
-DEPLOYMENTS_PER_NAMESPACE=2
-REPLICAS_PER_DEPLOYMENT=30
+DEPLOYMENTS_PER_NAMESPACE=3
+REPLICAS_PER_DEPLOYMENT=20
 
 for i in $(seq 1 $NAMESPACE_COUNT); do
-  NAMESPACE="test-$i"
-  kubectl create namespace $NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
+  namespace="test-$i"
+  if ! kubectl get namespace "$namespace" > /dev/null 2>&1; then
+    kubectl create namespace "$namespace"
+  fi
 
   for j in $(seq 1 $DEPLOYMENTS_PER_NAMESPACE); do
-    DEPLOYMENT_NAME="test-$j"
+    deployment="test-$j"
 
-    tmp_file="/tmp/kwok/pods-$i-$j.yaml"
-    cat > $tmp_file << EOF
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: $DEPLOYMENT_NAME
-  namespace: $NAMESPACE
-spec:
-  replicas: $REPLICAS_PER_DEPLOYMENT
-  selector:
-    matchLabels:
-      app: fake-pod
-  template:
-    metadata:
-      labels:
-        app: fake-pod
-    spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: type
-                operator: In
-                values:
-                - kwok
-      tolerations:
-      - key: "kwok.x-k8s.io/node"
-        operator: "Exists"
-        effect: "NoSchedule"
-      containers:
-      - name: fake-container
-        image: fake-image
-        resources:
-          requests:
-            cpu: 3
-EOF
+    template=$(cat deployment.yaml)
+    template=$(echo "$template" | sed "s/<NAMESPACE>/$namespace/g")
+    template=$(echo "$template" | sed "s/<DEPLOYMENT>/$deployment/g")
+    template=$(echo "$template" | sed "s/<REPLICAS>/$REPLICAS_PER_DEPLOYMENT/g")
 
+    tmp_file="/tmp/kwok/deployment-$i-$j.yaml"
+    echo "$template" > $tmp_file
     kubectl apply -f $tmp_file
     rm $tmp_file
   done
