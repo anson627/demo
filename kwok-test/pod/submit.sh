@@ -3,8 +3,8 @@
 set -eo pipefail
 
 NAMESPACE_COUNT=2
-DEPLOYMENTS_PER_NAMESPACE=3
-REPLICAS_PER_DEPLOYMENT=20
+JOBS_PER_NAMESPACE=2
+COMPLETIONS_PER_JOB=10
 
 for i in $(seq 1 $NAMESPACE_COUNT); do
   namespace="test-$i"
@@ -12,15 +12,16 @@ for i in $(seq 1 $NAMESPACE_COUNT); do
     kubectl create namespace "$namespace"
   fi
 
-  for j in $(seq 1 $DEPLOYMENTS_PER_NAMESPACE); do
-    deployment="test-$j"
+  for j in $(seq 1 $JOBS_PER_NAMESPACE); do
+    job="test-$j"
 
-    template=$(cat deployment.yaml)
+    template=$(cat job.yaml)
     template=$(echo "$template" | sed "s/<NAMESPACE>/$namespace/g")
-    template=$(echo "$template" | sed "s/<DEPLOYMENT>/$deployment/g")
-    template=$(echo "$template" | sed "s/<REPLICAS>/$REPLICAS_PER_DEPLOYMENT/g")
+    template=$(echo "$template" | sed "s/<JOB>/$job/g")
+    template=$(echo "$template" | sed "s/<REPLICAS>/$COMPLETIONS_PER_JOB/g")
 
-    tmp_file="/tmp/kwok/deployment-$i-$j.yaml"
+    mkdir -p /tmp/kwok
+    tmp_file="/tmp/kwok/job-$i-$j.yaml"
     echo "$template" > $tmp_file
     kubectl apply -f $tmp_file
     rm $tmp_file

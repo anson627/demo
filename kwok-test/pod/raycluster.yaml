@@ -1,0 +1,39 @@
+apiVersion: ray.io/v1
+kind: RayCluster
+metadata:
+  name: test-2
+spec:
+  rayVersion: '2.41.0'
+  headGroupSpec:
+    rayStartParams: {}
+    template:
+      spec:
+        nodeSelector:
+          type: kwok
+        tolerations:
+        - key: "kwok.x-k8s.io/node"
+          operator: "Exists"
+          effect: "NoSchedule"
+        containers:
+          - name: ray-head
+            image: rayproject/ray:2.41.0
+  workerGroupSpecs:
+    - replicas: 8
+      groupName: gpu
+      rayStartParams: {}
+      template:
+        spec:
+          nodeSelector:
+            type: kwok
+          tolerations:
+            - key: "kwok.x-k8s.io/node"
+              operator: "Exists"
+              effect: "NoSchedule"
+          containers:
+            - name: ray-worker
+              image: rayproject/ray:2.41.0
+              resources:
+                requests:
+                  nvidia.com/gpu: 1
+                limits:
+                  nvidia.com/gpu: 1

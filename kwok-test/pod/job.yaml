@@ -1,27 +1,19 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: batch/v1
+kind: Job
 metadata:
-  name: <DEPLOYMENT>
+  name: <JOB>
   namespace: <NAMESPACE>
 spec:
-  replicas: <REPLICAS>
-  selector:
-    matchLabels:
-      app: fake
+  completions: <REPLICAS>
+  parallelism: <REPLICAS>
   template:
     metadata:
       labels:
         app: fake
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: type
-                operator: In
-                values:
-                - kwok
+      restartPolicy: Never
+      nodeSelector:
+        type: kwok
       tolerations:
       - key: "kwok.x-k8s.io/node"
         operator: "Exists"

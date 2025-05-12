@@ -1,0 +1,8 @@
+apiVersion: ray.io/v1
+kind: RayJob
+metadata:
+  name: test-job-2
+spec:
+  entrypoint: python -c "import ray; ray.init(); print(ray.cluster_resources())"
+  clusterSelector:
+    ray.io/cluster: test-2
