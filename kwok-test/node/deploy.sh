@@ -2,8 +2,8 @@
 
 set -e
 
-NODE_COUNT=10
-BATCH_SIZE=1
+NODE_COUNT=5000
+BATCH_SIZE=500
 
 kubectl apply -f kwok.yaml
 if [ $? -ne 0 ]; then
@@ -18,7 +18,7 @@ if [ $? -ne 0 ]; then
 fi
 
 TOTAL_BATCHES=$((NODE_COUNT / BATCH_SIZE + (NODE_COUNT % BATCH_SIZE > 0)))
-for i in $(seq 1 $TOTAL_BATCHES); do
+for i in $(seq 11 $TOTAL_BATCHES); do
   start_idx=$(( (i-1) * BATCH_SIZE + 1 ))
   end_idx=$((i * BATCH_SIZE))
 
