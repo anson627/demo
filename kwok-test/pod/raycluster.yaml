@@ -8,12 +8,6 @@ spec:
     rayStartParams: {}
     template:
       spec:
-        nodeSelector:
-          type: kwok
-        tolerations:
-        - key: "kwok.x-k8s.io/node"
-          operator: "Exists"
-          effect: "NoSchedule"
         containers:
           - name: ray-head
             image: rayproject/ray:2.41.0
@@ -23,12 +17,6 @@ spec:
       rayStartParams: {}
       template:
         spec:
-          nodeSelector:
-            type: kwok
-          tolerations:
-            - key: "kwok.x-k8s.io/node"
-              operator: "Exists"
-              effect: "NoSchedule"
           containers:
             - name: ray-worker
               image: rayproject/ray:2.41.0

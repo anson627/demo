@@ -1,23 +1,17 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: <JOB>
-  namespace: <NAMESPACE>
+  name: job
+  namespace: default
 spec:
-  completions: <REPLICAS>
-  parallelism: <REPLICAS>
+  completions: 1
+  parallelism: 1
   template:
     metadata:
       labels:
-        app: fake
+        app: fake-pod
     spec:
       restartPolicy: Never
-      nodeSelector:
-        type: kwok
-      tolerations:
-      - key: "kwok.x-k8s.io/node"
-        operator: "Exists"
-        effect: "NoSchedule"
       containers:
       - name: fake-worker
         image: fake-image
