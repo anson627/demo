@@ -16,6 +16,7 @@ if az aks show -g ${RESOURCE_GROUP} -n ${CLUSTER_NAME} &>/dev/null; then
     echo "Cluster already exists."
 else
     echo "Cluster does not exist. Creating ..."
+    # --network-plugin-mode overlay \
     az aks create -l ${LOCATION} \
         -g ${RESOURCE_GROUP} \
         -n ${CLUSTER_NAME} \
