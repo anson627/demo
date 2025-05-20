@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-TEST_NAMESPACES=$(kubectl get namespaces -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n' | grep '^test-[0-9]*$')
+TEST_NAMESPACES=$(kubectl get namespaces -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n' | grep '^kwok-[0-9]*$')
 NAMESPACE_COUNT=$(echo "$TEST_NAMESPACES" | wc -w)
 
 if [ "$NAMESPACE_COUNT" -eq 0 ]; then
