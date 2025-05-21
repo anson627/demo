@@ -1,0 +1,56 @@
+{{- $workerReplicas := .Values.workerReplicas }}
+{{- range $i := until (int .Values.jobCount) }}
+---
+apiVersion: ray.io/v1
+kind: RayJob
+metadata:
+  name: kwok-{{ $i }}
+spec:
+  entrypoint: python -c "import ray; ray.init(); print(ray.cluster_resources())"
+  submitterPodTemplate:
+    spec:
+      restartPolicy: Never
+      nodeSelector:
+        type: kwok
+      tolerations:
+      - key: "kwok.x-k8s.io/node"
+        operator: "Exists"
+        effect: "NoSchedule"
+      containers:
+        - name: ray-submitter
+          image: rayproject/ray:2.41.0
+  rayClusterSpec:
+    headGroupSpec:
+      rayStartParams: {}
+      template:
+        spec:
+          nodeSelector:
+            type: kwok
+          tolerations:
+          - key: "kwok.x-k8s.io/node"
+            operator: "Exists"
+            effect: "NoSchedule"
+          containers:
+            - name: ray-head
+              image: rayproject/ray:2.41.0
+    workerGroupSpecs:
+      - replicas: {{ $workerReplicas }}
+        groupName: gpu
+        rayStartParams: {}
+        template:
+          spec:
+            nodeSelector:
+              type: kwok
+            tolerations:
+            - key: "kwok.x-k8s.io/node"
+              operator: "Exists"
+              effect: "NoSchedule"
+            containers:
+              - name: ray-worker
+                image: rayproject/ray:2.41.0
+                resources:
+                  requests:
+                    nvidia.com/gpu: 1
+                  limits:
+                    nvidia.com/gpu: 1
+{{- end }}
