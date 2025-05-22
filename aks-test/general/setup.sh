@@ -16,7 +16,6 @@ if az aks show -g ${RESOURCE_GROUP} -n ${CLUSTER_NAME} &>/dev/null; then
     echo "Cluster already exists."
 else
     echo "Cluster does not exist. Creating ..."
-    # --aks-custom-headers OverrideControlplaneResources=W3siY29udGFpbmVyTmFtZSI6Imt1YmUtYXBpc2VydmVyIiwiY3B1TGltaXQiOiIzMCIsImNwdVJlcXVlc3QiOiIyNyIsIm1lbW9yeUxpbWl0IjoiNjRHaSIsIm1lbW9yeVJlcXVlc3QiOiI2NEdpIiwiZ29tYXhwcm9jcyI6MzB9XSAg,ControlPlaneUnderlay=hcp-underlay-eastus2-cx-382,AKSHTTPCustomFeatures=OverrideControlplaneResources
     az aks create -l ${LOCATION} \
         -g ${RESOURCE_GROUP} \
         -n ${CLUSTER_NAME} \
@@ -24,10 +23,12 @@ else
         --kubernetes-version 1.33.0 \
         --network-plugin azure \
         --network-plugin-mode overlay \
-        --pod-cidr 172.16.0.0/11 \
         --nodepool-name system \
+        --pod-cidr 172.16.0.0/10 \
         --node-vm-size ${SYSTEM_VM_SIZE} \
-        --node-count ${SYSTEM_POOL_SIZE}
+        --node-count ${SYSTEM_POOL_SIZE} \
+        --custom-configuration custom-config.json \
+        --aks-custom-headers OverrideControlplaneResources=W3siY29udGFpbmVyTmFtZSI6Imt1YmUtYXBpc2VydmVyIiwiY3B1TGltaXQiOiIzMCIsImNwdVJlcXVlc3QiOiIyNyIsIm1lbW9yeUxpbWl0IjoiNjRHaSIsIm1lbW9yeVJlcXVlc3QiOiI2NEdpIiwiZ29tYXhwcm9jcyI6MzB9XSAg,ControlPlaneUnderlay=hcp-underlay-eastus2-cx-382,AKSHTTPCustomFeatures=OverrideControlplaneResources
 fi
 
 if [ "${USER_POOL_COUNT}" -gt 0 ]; then
