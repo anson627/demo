@@ -10,7 +10,7 @@ if helm list -q | grep "^node$" > /dev/null 2>&1; then
   echo "node release already exists, skipping..."
 else
   helm upgrade --install node node \
-  --set "nodeCount=$NODE_COUNT"
+    --set "nodeCount=$NODE_COUNT"
 fi
 
 for i in $(seq 1 $NAMESPACE_COUNT); do
