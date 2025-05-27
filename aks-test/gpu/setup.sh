@@ -21,9 +21,12 @@ else
         -g ${RESOURCE_GROUP} \
         -n ${CLUSTER_NAME} \
         --tier standard \
-        --nodepool-name ${SYSTEM_POOL_NAME} \
+        --kubernetes-version 1.33.0 \
+        --nodepool-name system \
         --node-vm-size ${SYSTEM_VM_SIZE} \
-        --node-count ${SYSTEM_POOL_SIZE}
+        --node-count ${SYSTEM_POOL_SIZE} \
+        --network-plugin azure \
+        --enable-apiserver-vnet-integration
 fi
 
 if az aks nodepool show --resource-group ${RESOURCE_GROUP} --cluster-name ${CLUSTER_NAME} --name ${USER_POOL_NAME} &>/dev/null; then
