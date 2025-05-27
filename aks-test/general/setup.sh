@@ -22,11 +22,10 @@ else
         --tier standard \
         --kubernetes-version 1.33.0 \
         --network-plugin azure \
-        --network-plugin-mode overlay \
         --nodepool-name system \
-        --pod-cidr 172.16.0.0/10 \
         --node-vm-size ${SYSTEM_VM_SIZE} \
         --node-count ${SYSTEM_POOL_SIZE} \
+        --enable-apiserver-vnet-integration \
         --custom-configuration custom-config.json \
         --aks-custom-headers OverrideControlplaneResources=W3siY29udGFpbmVyTmFtZSI6Imt1YmUtYXBpc2VydmVyIiwiY3B1TGltaXQiOiIzMCIsImNwdVJlcXVlc3QiOiIyNyIsIm1lbW9yeUxpbWl0IjoiNjRHaSIsIm1lbW9yeVJlcXVlc3QiOiI2NEdpIiwiZ29tYXhwcm9jcyI6MzB9XSAg,ControlPlaneUnderlay=hcp-underlay-eastus2-cx-382,AKSHTTPCustomFeatures=OverrideControlplaneResources
 fi
