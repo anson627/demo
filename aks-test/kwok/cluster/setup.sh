@@ -16,6 +16,7 @@ if az aks show -g ${RESOURCE_GROUP} -n ${CLUSTER_NAME} &>/dev/null; then
     echo "Cluster already exists."
 else
     echo "Cluster does not exist. Creating ..."
+    #   --custom-configuration custom-config.json \
     az aks create -l ${LOCATION} \
         -g ${RESOURCE_GROUP} \
         -n ${CLUSTER_NAME} \
@@ -26,23 +27,24 @@ else
         --nodepool-name system \
         --node-vm-size ${SYSTEM_VM_SIZE} \
         --node-count ${SYSTEM_POOL_SIZE} \
-        --custom-configuration custom-config.json \
         --aks-custom-headers OverrideControlplaneResources=W3siY29udGFpbmVyTmFtZSI6Imt1YmUtYXBpc2VydmVyIiwiY3B1TGltaXQiOiIzMCIsImNwdVJlcXVlc3QiOiIyNyIsIm1lbW9yeUxpbWl0IjoiNjRHaSIsIm1lbW9yeVJlcXVlc3QiOiI2NEdpIiwiZ29tYXhwcm9jcyI6MzB9XSAg,ControlPlaneUnderlay=hcp-underlay-eastus2-cx-382,AKSHTTPCustomFeatures=OverrideControlplaneResources
 fi
 
-az aks nodepool add \
+if az aks nodepool show \
     --resource-group ${RESOURCE_GROUP} \
     --cluster-name ${CLUSTER_NAME} \
-    --name virtual \
-    --node-vm-size Standard_D32ds_v5 \
-    --node-count 20
+    --name user &>/dev/null; then
+    echo "User node pool already exists."
+else
+    echo "User node pool does not exist. Creating ..."
+    az aks nodepool add \
+        --resource-group ${RESOURCE_GROUP} \
+        --cluster-name ${CLUSTER_NAME} \
+        --name user \
+        --node-vm-size ${USER_VM_SIZE} \
+        --node-count ${USER_POOL_SIZE}
+fi
 
-az aks nodepool add \
-    --resource-group ${RESOURCE_GROUP} \
-    --cluster-name ${CLUSTER_NAME} \
-    --name runner \
-    --node-vm-size Standard_D32ds_v5 \
-    --node-count 20
 
 az aks get-credentials --resource-group ${RESOURCE_GROUP} \
     --name ${CLUSTER_NAME} \
