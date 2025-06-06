@@ -16,7 +16,6 @@ if az aks show -g ${RESOURCE_GROUP} -n ${CLUSTER_NAME} &>/dev/null; then
     echo "Cluster already exists."
 else
     echo "Cluster does not exist. Creating ..."
-    #   --custom-configuration custom-config.json \
     az aks create -l ${LOCATION} \
         -g ${RESOURCE_GROUP} \
         -n ${CLUSTER_NAME} \
@@ -24,9 +23,11 @@ else
         --kubernetes-version 1.33.0 \
         --network-plugin azure \
         --network-plugin-mode overlay \
-        --nodepool-name system \
         --node-vm-size ${SYSTEM_VM_SIZE} \
         --node-count ${SYSTEM_POOL_SIZE} \
+        --os-sku Ubuntu2404 \
+        --nodepool-name system \
+        --custom-configuration custom-config.json \
         --aks-custom-headers OverrideControlplaneResources=W3siY29udGFpbmVyTmFtZSI6Imt1YmUtYXBpc2VydmVyIiwiY3B1TGltaXQiOiIzMCIsImNwdVJlcXVlc3QiOiIyNyIsIm1lbW9yeUxpbWl0IjoiNjRHaSIsIm1lbW9yeVJlcXVlc3QiOiI2NEdpIiwiZ29tYXhwcm9jcyI6MzB9XSAg,ControlPlaneUnderlay=hcp-underlay-eastus2-cx-382,AKSHTTPCustomFeatures=OverrideControlplaneResources
 fi
 
@@ -40,9 +41,10 @@ else
     az aks nodepool add \
         --resource-group ${RESOURCE_GROUP} \
         --cluster-name ${CLUSTER_NAME} \
-        --name user \
         --node-vm-size ${USER_VM_SIZE} \
-        --node-count ${USER_POOL_SIZE}
+        --node-count ${USER_POOL_SIZE} \
+        --os-sku Ubuntu2404 \
+        --name user
 fi
 
 
