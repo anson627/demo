@@ -1,1 +1,1 @@
-eksctl delete cluster -n cri-test --region=us-west-1
+eksctl delete cluster -n kwok-eks --region=us-west-1

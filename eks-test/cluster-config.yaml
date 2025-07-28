@@ -1,13 +1,13 @@
 apiVersion: eksctl.io/v1alpha5
 kind: ClusterConfig
 metadata:
-  name: cri-test
+  name: kwok-eks
   region: us-west-1
-  version: "1.30"
+  version: "1.33"
 
 managedNodeGroups:
   - name: default
-    instanceType: m5d.large
+    instanceType: m7i.metal-24xl
     privateNetworking: true
     minSize: 1
     maxSize: 3

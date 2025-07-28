@@ -7,7 +7,7 @@ while true; do
   num_succeeded=$(kubectl get rayjob -A -l perf-test=rayjob-pytorch-mnist  -o jsonpath='{range .items[*]}{.metadata.name} {.status.jobStatus}{"\n"}' | grep -c SUCCEEDED)
   echo "$num_succeeded RayJobs completed..."
 
-  if [[ "$num_succeeded" == "$expect_succeeded" ]]; then
+  if [[ "$num_succeeded" -ge "$expect_succeeded" ]]; then
      break;
   fi
 

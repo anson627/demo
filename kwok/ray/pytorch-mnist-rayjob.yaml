@@ -38,7 +38,7 @@ spec:
             effect: "NoSchedule"
           containers:
             - name: ray-head
-              image: {{.Image}}
+              image: rayproject/ray:2.41.0
               ports:
                 - containerPort: 6379
                   name: gcs-server
@@ -68,7 +68,7 @@ spec:
               effect: "NoSchedule"
             containers:
               - name: ray-worker
-                image: {{.Image}}
+                image: rayproject/ray:2.41.0
                 resources:
                   limits:
                     memory: "4Gi"
