@@ -1,6 +1,6 @@
 KWOK_REPO="kubernetes-sigs/kwok"
 KWOK_RELEASE="v0.7.0"
-KWOK_NODES=10
+KWOK_NODES=100
 kubectl apply -f "https://github.com/${KWOK_REPO}/releases/download/${KWOK_RELEASE}/kwok.yaml"
 kubectl apply -f "https://github.com/${KWOK_REPO}/releases/download/${KWOK_RELEASE}/stage-fast.yaml"
 for ((i = 0; i < KWOK_NODES; i++)); do
