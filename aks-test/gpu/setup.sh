@@ -16,7 +16,6 @@ if az aks show -g ${RESOURCE_GROUP} -n ${CLUSTER_NAME} &>/dev/null; then
     echo "Cluster already exists."
 else
     echo "Cluster does not exist. Creating ..."
-    # --custom-configuration custom-config.json
     az aks create -l ${LOCATION} \
         -g ${RESOURCE_GROUP} \
         -n ${CLUSTER_NAME} \
@@ -26,7 +25,7 @@ else
         --node-vm-size ${SYSTEM_VM_SIZE} \
         --node-count ${SYSTEM_POOL_SIZE} \
         --network-plugin azure \
-        --enable-apiserver-vnet-integration
+        --network-plugin-mode overlay
 fi
 
 if az aks nodepool show --resource-group ${RESOURCE_GROUP} --cluster-name ${CLUSTER_NAME} --name ${USER_POOL_NAME} &>/dev/null; then
@@ -36,7 +35,7 @@ else
     az aks nodepool add \
         --resource-group ${RESOURCE_GROUP} \
         --cluster-name ${CLUSTER_NAME} \
-        --name ${USER_POOL_NAME} \
+        --name user \
         --node-vm-size ${USER_VM_SIZE} \
         --node-count ${USER_POOL_SIZE} \
         --skip-gpu-driver-install

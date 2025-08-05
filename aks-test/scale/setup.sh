@@ -31,6 +31,18 @@ else
         --aks-custom-headers OverrideControlplaneResources=W3siY29udGFpbmVyTmFtZSI6Imt1YmUtYXBpc2VydmVyIiwiY3B1TGltaXQiOiIzMCIsImNwdVJlcXVlc3QiOiIyNyIsIm1lbW9yeUxpbWl0IjoiNjRHaSIsIm1lbW9yeVJlcXVlc3QiOiI2NEdpIiwiZ29tYXhwcm9jcyI6MzB9XSAg,ControlPlaneUnderlay=hcp-underlay-eastus2-cx-382,AKSHTTPCustomFeatures=OverrideControlplaneResources
 fi
 
+if az aks nodepool show --resource-group ${RESOURCE_GROUP} --cluster-name ${CLUSTER_NAME} --name ${USER_POOL_NAME} &>/dev/null; then
+    echo "User pool already exists."
+else
+    echo "User pool does not exist. Creating ..."
+    az aks nodepool add \
+        --resource-group ${RESOURCE_GROUP} \
+        --cluster-name ${CLUSTER_NAME} \
+        --name ${USER_POOL_NAME} \
+        --node-vm-size ${USER_VM_SIZE} \
+        --node-count ${USER_POOL_SIZE} \
+        --os-sku Ubuntu2404
+fi
 
 az aks get-credentials --resource-group ${RESOURCE_GROUP} \
     --name ${CLUSTER_NAME} \
