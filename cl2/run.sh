@@ -5,6 +5,7 @@ set -eo pipefail
 PROVIDER="aks"
 
 clusterloader2 --provider=$PROVIDER --v=2 \
+  --enable-exec-service=False \
   --kubeconfig=/Users/ansonqian/.kube/config \
   --testconfig=config.yaml \
   --testoverrides=overrides.yaml \
