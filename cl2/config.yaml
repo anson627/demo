@@ -75,11 +75,15 @@ steps:
 
   - name: Waiting for jobs to be finished
     measurements:
-    - Identifier: WaitForFinishedJobs
-      Method: WaitForFinishedJobs
+    - Identifier: WaitForJob
+      Method: Exec
       Params:
-        action: gather
-        timeout: 3h
+        timeout: 1h
+        command:
+        - "bash"
+        - "wait-for-jobs.sh"
+        - "{{$jobs}}"
+
   - name: Collect measurements
     measurements:
       - Identifier: SchedulingThroughput
