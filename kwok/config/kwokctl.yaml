@@ -1,0 +1,40 @@
+kind: KwokctlConfiguration
+apiVersion: config.kwok.x-k8s.io/v1alpha1
+componentsPatches:
+  - name: kwok-controller
+    extraEnvs:
+      - name: "GOMAXPROCS"
+        value: "4"
+  - name: etcd
+    extraEnvs:
+      - name: "GOMAXPROCS"
+        value: "4"
+  - name: kube-apiserver
+    extraArgs:
+    - key: max-requests-inflight
+      value: "10000"
+    - key: max-mutating-requests-inflight
+      value: "5000"
+    extraEnvs:
+      - name: "GOMAXPROCS"
+        value: "4"
+  - name: kube-scheduler
+    extraArgs:
+    - key: kube-api-qps
+      value: "300"
+    - key: kube-api-burst
+      value: "400"
+    extraEnvs:
+      - name: "GOMAXPROCS"
+        value: "4"
+  - name: kube-controller-manager
+    extraArgs:
+      - key: concurrent-job-syncs
+        value: "100"
+      - key: kube-api-qps
+        value: "300"
+      - key: kube-api-burst
+        value: "400"
+    extraEnvs:
+      - name: "GOMAXPROCS"
+        value: "16"
