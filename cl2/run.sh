@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-PROVIDER="aks"
+PROVIDER="kind"
 
 clusterloader2 --provider=$PROVIDER --v=2 \
   --enable-exec-service=False \
