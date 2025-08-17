@@ -4,11 +4,11 @@ componentsPatches:
   - name: kwok-controller
     extraEnvs:
       - name: "GOMAXPROCS"
-        value: "4"
+        value: "32"
   - name: etcd
     extraEnvs:
       - name: "GOMAXPROCS"
-        value: "4"
+        value: "32"
   - name: kube-apiserver
     extraArgs:
     - key: max-requests-inflight
@@ -17,24 +17,24 @@ componentsPatches:
       value: "5000"
     extraEnvs:
       - name: "GOMAXPROCS"
-        value: "4"
+        value: "32"
   - name: kube-scheduler
     extraArgs:
     - key: kube-api-qps
-      value: "300"
+      value: "2000"
     - key: kube-api-burst
-      value: "400"
+      value: "4000"
     extraEnvs:
       - name: "GOMAXPROCS"
-        value: "4"
+        value: "32"
   - name: kube-controller-manager
     extraArgs:
       - key: concurrent-job-syncs
-        value: "100"
+        value: "500"
       - key: kube-api-qps
-        value: "300"
+        value: "2000"
       - key: kube-api-burst
-        value: "400"
+        value: "4000"
     extraEnvs:
       - name: "GOMAXPROCS"
-        value: "16"
+        value: "32"
