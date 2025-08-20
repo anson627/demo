@@ -9,4 +9,7 @@
 # kubectl patch deployment kwok-controller -n kube-system -p '{"spec":{"template":{"spec":{"nodeSelector":{"agentpool":"user"}}}}}'
 # kubectl apply -f config/device-class.yaml
 
-kwokctl create cluster -c config/kwokctl.yaml --kube-scheduler-config config/kube-scheduler.yaml
+kwokctl create cluster \
+    -c config/kwokctl.yaml \
+    --kwok-controller-image registry.k8s.io/kwok/kwok:v0.7.0 \
+    --kube-scheduler-config config/kube-scheduler.yaml \

@@ -19,18 +19,13 @@ componentsPatches:
       - name: "GOMAXPROCS"
         value: "32"
   - name: kube-scheduler
-    extraArgs:
-    - key: kube-api-qps
-      value: "2000"
-    - key: kube-api-burst
-      value: "4000"
     extraEnvs:
       - name: "GOMAXPROCS"
         value: "32"
   - name: kube-controller-manager
     extraArgs:
       - key: concurrent-job-syncs
-        value: "500"
+        value: "700"
       - key: kube-api-qps
         value: "2000"
       - key: kube-api-burst
