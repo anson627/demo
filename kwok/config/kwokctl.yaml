@@ -11,6 +11,8 @@ componentsPatches:
         value: "32"
   - name: kube-apiserver
     extraArgs:
+    - key: runtime-config
+      value: "resource.k8s.io/v1beta1=true"
     - key: max-requests-inflight
       value: "10000"
     - key: max-mutating-requests-inflight
