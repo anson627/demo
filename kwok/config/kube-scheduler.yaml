@@ -5,3 +5,19 @@ percentageOfNodesToScore: 5
 clientConnection:
   qps: 2000
   burst: 4000
+# Additional latency optimizations
+podInitialBackoffSeconds: 1
+podMaxBackoffSeconds: 10
+# Disable expensive plugins for better latency
+profiles:
+- schedulerName: default-scheduler
+  plugins:
+    score:
+      disabled:
+      - name: "*"
+    filter:
+      disabled:
+      - name: "*"
+      enabled:
+      - name: NodeResourcesFit
+      - name: TaintToleration
