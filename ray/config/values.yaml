@@ -1,0 +1,5 @@
+reconcileConcurrency: 100
+resources:
+  limits:
+    cpu: 32
+    memory: 50Gi

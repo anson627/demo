@@ -2,9 +2,9 @@ name: kuberay
 namespace:
   number: 10
 tuningSets:
-- name: Uniform100qps
+- name: Uniform700qps
   qpsLoad:
-    qps: 100
+    qps: 700
 steps:
 - name: Start measurements
   measurements:
@@ -14,58 +14,57 @@ steps:
       action: start
       labelSelector: app.kubernetes.io/created-by = kuberay-operator
       threshold: 30m
-  - Identifier: WaitForControlledPodsRunning
-    Method: WaitForControlledPodsRunning
-    Params:
-      action: start
-      apiVersion: ray.io/v1
-      kind: RayCluster
-      labelSelector: app.kubernetes.io/created-by = kuberay-operator
-      operationTimeout: 120s
   - Identifier: JobLifecycleLatency
     Method: JobLifecycleLatency
     Params:
       action: start
       labelSelector: app.kubernetes.io/created-by = kuberay-operator
       threshold: 10m
+  - Identifier: SchedulingThroughput
+    Method: SchedulingThroughput
+    Params:
+      action: start
+      labelSelector: app.kubernetes.io/created-by = kuberay-operator
+
 - name: Creating RayJobs for PyTorch MNIST fine-tuning
   phases:
   - namespaceRange:
       min: 1
       max: 10
-    replicasPerNamespace: 10
-    tuningSet: Uniform100qps
+    replicasPerNamespace: 500
+    tuningSet: Uniform700qps
     objectBundle:
     - basename: pytorch-mnist
       objectTemplatePath: pytorch-mnist-rayjob.yaml
       templateFillMap:
         Image: "rayproject/ray:2.46.0" # replace with image built from images/ray-pytorch
+
 - name: Wait for RayJobs complete
   measurements:
   - Identifier: WaitForRayJob
     Method: Exec
     Params:
+      streamOutput: true
       timeout: 30m
       command:
       - "bash"
-      - "ray/wait-for-rayjobs.sh"
-      - "100"
-- name: Wait for pods to be running
+      - "wait-for-rayjobs.sh"
+      - "5000"
+
+- name: Collect measurements
   measurements:
-  - Identifier: WaitForControlledPodsRunning
-    Method: WaitForControlledPodsRunning
-    Params:
-      action: gather
-      operationTimeout: 10m
-- name: Measure pod startup latency
-  measurements:
-  - Identifier: PodStartupLatency
-    Method: PodStartupLatency
-    Params:
-      action: gather
-- name: Measure job finished
-  measurements:
-  - Identifier: JobLifecycleLatency
-    Method: JobLifecycleLatency
-    Params:
-      action: gather
+    - Identifier: SchedulingThroughput
+      Method: SchedulingThroughput
+      Params:
+        action: gather
+        timeout: 3h
+    - Identifier: PodStartupLatency
+      Method: PodStartupLatency
+      Params:
+        action: gather
+        timeout: 3h
+    - Identifier: JobLifecycleLatency
+      Method: JobLifecycleLatency
+      Params:
+        action: gather
+        timeout: 3h

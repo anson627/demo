@@ -16,4 +16,5 @@
     --kube-scheduler-image "registry.k8s.io/kube-scheduler:v1.34.0" \
     --kwok-controller-image registry.k8s.io/kwok/kwok:v0.7.0 \
     -c config/kwokctl.yaml \
+    --runtime kind \
     --kube-scheduler-config config/kube-scheduler.yaml
