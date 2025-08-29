@@ -9,7 +9,7 @@
 # kubectl patch deployment kwok-controller -n kube-system -p '{"spec":{"template":{"spec":{"nodeSelector":{"agentpool":"user"}}}}}'
 # kubectl apply -f config/device-class.yaml
 
-~/go/src/github.com/anson627/kwok/bin/darwin/arm64/kwokctl create cluster \
+kwokctl create cluster \
     --etcd-image "registry.k8s.io/etcd:v3.6.0" \
     --kube-apiserver-image "registry.k8s.io/kube-apiserver:v1.34.0" \
     --kube-controller-manager-image "registry.k8s.io/kube-controller-manager:v1.34.0" \
