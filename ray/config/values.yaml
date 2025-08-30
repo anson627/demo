@@ -1,5 +1,9 @@
+image:
+  repository: "ghcr.io/anson627/kuberay/operator"
+  tag: "v1.4.2"
+  pullPolicy: "IfNotPresent"
 reconcileConcurrency: 100
 resources:
   limits:
-    cpu: 32
-    memory: 50Gi
+    cpu: 60
+    memory: 200Gi

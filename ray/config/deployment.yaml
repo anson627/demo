@@ -16,15 +16,6 @@ spec:
       nodeName: kwok-kwok-control-plane
       containers:
       - name: server
-        image: docker.io/library/python:3.11-alpine
+        image: ghcr.io/anson627/kuberay/kwok:v1.3.3
         ports:
         - containerPort: 8265
-        volumeMounts:
-        - name: mock-head
-          mountPath: /app
-        command: ["python"]
-        args: ["/app/server.py"]
-      volumes:
-      - name: mock-head
-        configMap:
-          name: mock-head
