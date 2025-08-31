@@ -4,9 +4,9 @@ namespace:
   prefix: test
 
 tuningSets:
-- name: Uniform700qps
+- name: Uniform100qps
   qpsLoad:
-    qps: 700
+    qps: 100
 
 steps:
 - name: Start measurements
@@ -22,20 +22,21 @@ steps:
     Params:
       action: start
       labelSelector: app.kubernetes.io/created-by = kuberay-operator
-      threshold: 10m
+      threshold: 30m
   - Identifier: SchedulingThroughput
     Method: SchedulingThroughput
     Params:
       action: start
       labelSelector: app.kubernetes.io/created-by = kuberay-operator
+      measurmentInterval: 1s
 
 - name: Creating RayJobs for PyTorch MNIST fine-tuning
   phases:
   - namespaceRange:
       min: 1
       max: 10
-    replicasPerNamespace: 500
-    tuningSet: Uniform700qps
+    replicasPerNamespace: 100
+    tuningSet: Uniform100qps
     objectBundle:
     - basename: pytorch-mnist
       objectTemplatePath: pytorch-mnist-rayjob.yaml
@@ -52,7 +53,7 @@ steps:
       command:
       - "bash"
       - "../cl2/wait-for-jobs.sh"
-      - "5000"
+      - "1000"
 
 - name: Collect measurements
   measurements:

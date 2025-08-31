@@ -5,7 +5,7 @@ metadata:
   labels:
     perf-test: rayjob-pytorch-mnist
 spec:
-  shutdownAfterJobFinishes: true
+  shutdownAfterJobFinishes: false
   entrypoint: python ray_train_pytorch_mnist.py
   runtimeEnvYAML: |
     env_vars:
@@ -53,9 +53,7 @@ spec:
                   cpu: "1"
                   memory: "4Gi"
     workerGroupSpecs:
-      - replicas: 2
-        minReplicas: 1
-        maxReplicas: 5
+      - replicas: 4
         groupName: worker-group
         rayStartParams: {}
         template:
