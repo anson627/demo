@@ -4,23 +4,25 @@ expect_completed=$1
 echo "waiting for $expect_completed Jobs to be completed successfully"
 
 while true; do
+    sleep 30
+
     num_completed=0
     num_failed=0
     num_running=0
     num_pending=0
-    
+
     # Print table header
-    echo "╭─────────────┬───────────┬─────────┬─────────┬────────╮"
-    echo "│ Namespace   │ Completed │ Running │ Pending │ Failed │"
-    echo "├─────────────┼───────────┼─────────┼─────────┼────────┤"
-    
+    echo "╭─────────────────┬────────────┬──────────┬──────────┬─────────╮"
+    echo "│ Namespace       │ Completed  │ Running  │ Pending  │ Failed  │"
+    echo "├─────────────────┼────────────┼──────────┼──────────┼─────────┤"
+
     for ns in $(kubectl get ns --no-headers -o custom-columns=":metadata.name" | grep '^test-'); do
         # Initialize namespace-specific counters
         ns_completed=0
         ns_running=0
         ns_pending=0
         ns_failed=0
-        
+
         # Get job statuses and count them
         jobs_output=$(kubectl get jobs -n "$ns" --no-headers 2>/dev/null)
         if [[ -n "$jobs_output" ]]; then
@@ -30,7 +32,7 @@ while true; do
                     # Parse job fields: NAME STATUS COMPLETIONS DURATION AGE
                     status=$(echo "$line" | awk '{print $2}')
                     completions=$(echo "$line" | awk '{print $3}')
-                    
+
                     # Determine job status based on kubectl output
                     if [[ "$status" == "Complete" ]]; then
                         num_completed=$((num_completed+1))
@@ -40,7 +42,7 @@ while true; do
                         if [[ "$completions" =~ ^([0-9]+)/([0-9]+)$ ]]; then
                             current=${BASH_REMATCH[1]}
                             total=${BASH_REMATCH[2]}
-                            
+
                             if [[ "$current" -gt 0 && "$current" -lt "$total" ]]; then
                                 num_running=$((num_running+1))
                                 ns_running=$((ns_running+1))
@@ -62,13 +64,13 @@ while true; do
                 fi
             done <<< "$jobs_output"
         fi
-        
+
         # Print namespace row in table format
-        printf "│ %-11s │ %9s │ %7s │ %7s │ %6s │\n" "$ns" "$ns_completed" "$ns_running" "$ns_pending" "$ns_failed"
+        printf "│ %-15s │ %10s │ %8s │ %8s │ %7s │\n" "$ns" "$ns_completed" "$ns_running" "$ns_pending" "$ns_failed"
     done
-    
+
     # Print table footer
-    echo "╰─────────────┴───────────┴─────────┴─────────┴────────╯"
+    echo "╰─────────────────┴────────────┴──────────┴──────────┴─────────╯"
     echo
 
     echo "Job Status Summary:"
@@ -77,11 +79,9 @@ while true; do
     echo "  Pending: $num_pending"
     echo "  Failed: $num_failed"
 
-    if [[ "$num_completed" -ge "$expect_completed" ]]; then
+    buffer=$(echo "$expect_completed * 0.01" | bc)
+    min_completed=$(printf "%.0f" "$(echo "$expect_completed - $buffer" | bc)")
+    if [[ "$num_completed" -ge "$min_completed" ]]; then
         break;
     fi
-
-  sleep 30
 done
-
-

@@ -1,10 +1,13 @@
 name: kuberay
 namespace:
   number: 10
+  prefix: test
+
 tuningSets:
 - name: Uniform700qps
   qpsLoad:
     qps: 700
+
 steps:
 - name: Start measurements
   measurements:
@@ -48,7 +51,7 @@ steps:
       timeout: 30m
       command:
       - "bash"
-      - "wait-for-rayjobs.sh"
+      - "../cl2/wait-for-jobs.sh"
       - "5000"
 
 - name: Collect measurements
