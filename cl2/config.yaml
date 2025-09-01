@@ -78,7 +78,7 @@ steps:
         command:
         - "bash"
         - "wait-for-jobs.sh"
-        - "100"
+        - "{{$jobs}}"
 
   - name: Collect measurements
     measurements:
