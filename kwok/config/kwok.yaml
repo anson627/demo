@@ -5,7 +5,7 @@ options:
   enableContentionProfiling: false
   enablePodsOnNodeSyncListPager: false
   enablePodsOnNodeSyncStreamWatch: true
-  nodeLeaseParallelism: 4
+  nodeLeaseParallelism: 64
   podPlayStageParallelism: 64
   nodePlayStageParallelism: 4
   nodePort: 10247

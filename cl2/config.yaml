@@ -27,6 +27,7 @@ steps:
         Params:
           action: start
           labelSelector: group=job-scheduling
+          measurmentInterval: 1s
       - Identifier: PodStartupLatency
         Method: PodStartupLatency
         Params:
@@ -38,7 +39,7 @@ steps:
         Params:
           action: start
           labelSelector: group=job-scheduling
-          timeout: 3h
+          threshold: {{$pod_startup_latency_threshold}}
 
   {{if $enable_resource_claims}}
   - name: Create resource claim templates

@@ -9,6 +9,7 @@
 # kubectl patch deployment kwok-controller -n kube-system -p '{"spec":{"template":{"spec":{"nodeSelector":{"agentpool":"user"}}}}}'
 # kubectl apply -f config/device-class.yaml
 
+#    --runtime kind \
 kwokctl create cluster \
     --etcd-image "registry.k8s.io/etcd:v3.6.0" \
     --kube-apiserver-image "registry.k8s.io/kube-apiserver:v1.34.0" \
@@ -16,5 +17,4 @@ kwokctl create cluster \
     --kube-scheduler-image "registry.k8s.io/kube-scheduler:v1.34.0" \
     --kwok-controller-image registry.k8s.io/kwok/kwok:v0.7.0 \
     -c config/kwokctl.yaml \
-    --runtime kind \
     --kube-scheduler-config config/kube-scheduler.yaml
