@@ -1,14 +1,16 @@
 kind: KwokctlConfiguration
 apiVersion: config.kwok.x-k8s.io/v1alpha1
+options:
+  prometheusPort: 9090
 componentsPatches:
   - name: kwok-controller
     extraEnvs:
       - name: "GOMAXPROCS"
-        value: "32"
+        value: "96"
   - name: etcd
     extraEnvs:
       - name: "GOMAXPROCS"
-        value: "32"
+        value: "96"
   - name: kube-apiserver
     extraArgs:
     - key: runtime-config
@@ -19,11 +21,11 @@ componentsPatches:
       value: "5000"
     extraEnvs:
       - name: "GOMAXPROCS"
-        value: "32"
+        value: "96"
   - name: kube-scheduler
     extraEnvs:
       - name: "GOMAXPROCS"
-        value: "32"
+        value: "96"
   - name: kube-controller-manager
     extraArgs:
       - key: concurrent-job-syncs
@@ -34,4 +36,4 @@ componentsPatches:
         value: "4000"
     extraEnvs:
       - name: "GOMAXPROCS"
-        value: "32"
+        value: "96"
