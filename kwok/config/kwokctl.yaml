@@ -23,13 +23,20 @@ componentsPatches:
       - name: "GOMAXPROCS"
         value: "96"
   - name: kube-scheduler
+    extraArgs:
+      - key: leader-elect
+        value: "false"
     extraEnvs:
       - name: "GOMAXPROCS"
         value: "96"
   - name: kube-controller-manager
     extraArgs:
+      - key: leader-elect
+        value: "false"
       - key: concurrent-job-syncs
         value: "700"
+      - key: terminated-pod-gc-threshold
+        value: "150000"
       - key: kube-api-qps
         value: "2000"
       - key: kube-api-burst
