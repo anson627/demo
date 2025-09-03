@@ -73,7 +73,7 @@ steps:
     - Identifier: WaitForFinishedJobs
       Method: Exec
       Params:
-        timeout: 30m
+        timeout: 3h
         streamOutput: true
         command:
         - "bash"
