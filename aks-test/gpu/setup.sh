@@ -20,7 +20,7 @@ else
         -g ${RESOURCE_GROUP} \
         -n ${CLUSTER_NAME} \
         --tier standard \
-        --kubernetes-version 1.33.0 \
+        --kubernetes-version 1.33.2 \
         --nodepool-name system \
         --node-vm-size ${SYSTEM_VM_SIZE} \
         --node-count ${SYSTEM_POOL_SIZE} \
