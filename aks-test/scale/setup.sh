@@ -45,3 +45,7 @@ for i in $(seq 1 ${USER_POOL_COUNT}); do
             --aks-custom-headers AKSHTTPCustomFeatures=Microsoft.ContainerService/UseCustomizedOSImage,OSImageSubscriptionID=$IMAGE_SUB_ID,OSImageResourceGroup=$IMAGE_RG,OSImageGallery=$IMAGE_GALLERY,OSImageName=$IMAGE_NAME,OSImageVersion=$IMAGE_VERSION
     fi
 done
+
+az aks get-credentials --resource-group ${RESOURCE_GROUP} \
+    --name ${CLUSTER_NAME} \
+    --overwrite-existing
