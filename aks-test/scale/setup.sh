@@ -26,6 +26,7 @@ else
         --node-count ${SYSTEM_POOL_SIZE} \
         --network-plugin none \
         --outbound-type managedNATGateway \
+        --nat-gateway-managed-outbound-ip-count 5 \
         --custom-configuration ./custom-config.json \
         --aks-custom-headers OverrideControlplaneResources=W3siY29udGFpbmVyTmFtZSI6Imt1YmUtYXBpc2VydmVyIiwiY3B1TGltaXQiOiIzMCIsImNwdVJlcXVlc3QiOiIyNyIsIm1lbW9yeUxpbWl0IjoiNjRHaSIsIm1lbW9yeVJlcXVlc3QiOiI2NEdpIiwiZ29tYXhwcm9jcyI6MzB9XSAg,ControlPlaneUnderlay=hcp-underlay-eastus2-cx-382,AKSHTTPCustomFeatures=OverrideControlplaneResources,AKSHTTPCustomFeatures=Microsoft.ContainerService/UseCustomizedOSImage,OSImageSubscriptionID=$IMAGE_SUB_ID,OSImageResourceGroup=$IMAGE_RG,OSImageGallery=$IMAGE_GALLERY,OSImageName=$IMAGE_NAME,OSImageVersion=$IMAGE_VERSION
 fi
