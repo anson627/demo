@@ -2,7 +2,7 @@
     "kubernetesConfigurations": {
         "kube-apiserver": {
             "config": {
-                "--watch-cache-sizes": "nodes#5000,pods#50000,jobs#50000"
+                "--watch-cache-sizes": "nodes#25000,pods#150000,jobs#150000"
             }
         },
         "kube-controller-manager": {
