@@ -1,9 +1,14 @@
 SUBSCRIPTION=8ecadfc9-d1a3-4ea4-b844-0d9f87e4d7c8
 LOCATION="centraluseuap"
 RESOURCE_GROUP="gb200-kp-centraluseuap"
-CLUSTER_NAME=aks-gb200-20250814-01-kp
-NP_NAME=gb200np02
-GPU_VM_SKU=Standard_ND128isr_NDR_GB200_v6
+CLUSTER_NAME=aks-gb200-20250915
+SYSTEM_VM_SIZE=Standard_D8ds_v5
+SYSTEM_POOL_SIZE=2
+USER_POOL_NAME=user
+USER_VM_SIZE=Standard_D8ds_v5
+USER_POOL_SIZE=1
+GPU_POOL_NAME=gpu
+GPU_VM_SIZE=Standard_ND128isr_NDR_GB200_v6
 IMAGE_SUB_ID=c4c3550e-a965-4993-a50c-628fd38cd3e1
 IMAGE_RG=aksvhdtestbuildrg
 IMAGE_GALLERY=PackerSigGalleryEastUS
@@ -41,9 +46,24 @@ else
   az aks nodepool add \
     --resource-group ${RESOURCE_GROUP} \
     --cluster-name $CLUSTER_NAME \
-    --name user \
-    --node-vm-size $GPU_VM_SKU \
+    --name ${USER_POOL_NAME} \
+    --node-vm-size ${USER_VM_SIZE} \
+    --node-count ${USER_POOL_SIZE}
+ fi
+
+if az aks nodepool show --resource-group ${RESOURCE_GROUP} --cluster-name ${CLUSTER_NAME} --name ${GPU_POOL_NAME} &>/dev/null; then
+    echo "GPU pool already exists."
+else
+  az aks nodepool add \
+    --resource-group ${RESOURCE_GROUP} \
+    --cluster-name $CLUSTER_NAME \
+    --name ${GPU_POOL_NAME} \
+    --node-vm-size ${GPU_VM_SIZE} \
     --node-count 0 \
     --tags TipNode.SessionId=$TIP_SESSION_ID \
     --aks-custom-headers AKSHTTPCustomFeatures=Microsoft.ContainerService/UseCustomizedOSImage,OSImageSubscriptionID=$IMAGE_SUB_ID,OSImageResourceGroup=$IMAGE_RG,OSImageGallery=$IMAGE_GALLERY,OSImageName=$IMAGE_NAME,OSImageVersion=$IMAGE_VERSION
  fi
+ 
+ az aks get-credentials --resource-group ${RESOURCE_GROUP} \
+    --name ${CLUSTER_NAME} \
+    --overwrite-existing
