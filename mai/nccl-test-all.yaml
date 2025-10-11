@@ -1,0 +1,190 @@
+apiVersion: kubeflow.org/v2beta1
+kind: MPIJob
+metadata:
+  name: "mve-nccl-test"
+  namespace: mai-nodecertification
+spec:
+  launcherCreationPolicy: AtStartup
+  mpiImplementation: OpenMPI
+  mpiReplicaSpecs:
+    Launcher:
+      replicas: 1
+      restartPolicy: Never
+      template:
+        metadata: {}
+        spec:
+          containers:
+          - command:
+            - /bin/bash
+            - -c
+            - |
+              # --------------------------------------------------------------------------
+              # Setup SSH
+              mkdir -p /var/run/sshd
+              sed -i 's/[ #]\(.*StrictHostKeyChecking \).*/ \1no/g' /etc/ssh/ssh_config && \
+              echo "    UserKnownHostsFile /dev/null" >> /etc/ssh/ssh_config
+
+              # Count the number of workers
+              hostfile="/etc/mpi/hostfile"
+              nworkers=$(wc -l < ${hostfile})
+
+              # --------------------------------------------------------------------------
+              # Setup logging
+              ts=$(date +%y%m%d-%H%M%S)
+              node=$(hostname)
+              log_path="${LOG_PATH:-$(pwd)}/nccl-all-nodes/${ts}-n${nworkers}-${node}"
+              mkdir -p ${log_path}
+
+              if [ ! -d "${log_path}" ]; then
+                echo "[$(date)] ERROR: log_path (${log_path}) does not exist or could not be created."
+              fi
+
+              # Start logging
+              exec > >(tee "${log_path}/pod.log") 2>&1
+
+              # --------------------------------------------------------------------------
+              # Wait for all hosts to be up
+              /scripts/wait_for_hosts.sh ${hostfile}
+              if [ $? -ne 0 ]; then
+                exit 1
+              fi
+
+              sleep 10
+              #### ==========================================================================
+              # Test mpirun
+              mpirun --allow-run-as-root -np ${nworkers} --hostfile ${hostfile} hostname
+
+              #### ==========================================================================
+              # Run the NCCL IB test
+
+              echo "[$(date)] Starting NCCL IB test with ${nworkers} workers..."
+
+              export NCCL_P2P_DISABLE=1
+              export NCCL_MNNVL_ENABLE=0
+              threshold=42
+              token="536870912     134217728     float     sum"
+
+              ret_code_ib=0
+
+              for cuda_devices in "0,1,2,3"; do
+                export CUDA_VISIBLE_DEVICES=${cuda_devices}
+                /scripts/run_nccl.sh --hostfile "${hostfile}" --grep_on "${token}" --threshold "${threshold}"
+                if [ $? -ne 0 ]; then
+                  ret_code_ib=$((ret_code_ib + 1))
+                fi
+              done
+
+              echo "[$(date)] NCCL IB test completed with exit code ${ret_code_ib}"
+
+              #### ==========================================================================
+
+              echo "[$(date)] NCCL all-nodes test completed."
+              [[ $ret_code_nvlink -eq 0 && $ret_code_ib -eq 0 ]] && exit 0 || exit 1
+
+            env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: LOG_PATH
+              value: /mnt/azureblob_storage/node-certification
+            image: maifalcon.azurecr.io/mai/mai-diagnostics:c79a0e1eaac6fbcc1aceaefd4b080c7461d964e6-linux-arm64
+            name: nccl-launcher
+            resources:
+              limits:
+                cpu: "1"
+                memory: 4Gi
+              requests:
+                cpu: "1"
+                memory: 4Gi
+            volumeMounts:
+            - mountPath: /scripts
+              name: nodecert-cm-scripts-tests
+            - mountPath: /mnt/azureblob_storage
+              name: azureblob-storage
+            - mountPath: /dev/infiniband
+              name: infiniband
+            - mountPath: /dev/shm
+              name: dshm
+          tolerations:
+          - effect: NoSchedule
+            key: mai/compute
+            operator: Exists
+          - effect: NoSchedule
+            key: mai/gpu
+            operator: Exists
+          - effect: NoSchedule
+            key: mai/node-certification
+            operator: Exists
+          volumes:
+          - configMap:
+              defaultMode: 493
+              name: nodecert-cm-scripts-tests
+            name: nodecert-cm-scripts-tests
+          - name: azureblob-storage
+            persistentVolumeClaim:
+              claimName: azureblob-nodecertification
+          - hostPath:
+              path: /dev/infiniband
+            name: infiniband
+          - emptyDir:
+              medium: Memory
+              sizeLimit: 400Gi
+            name: dshm
+    Worker:
+      replicas: 256
+      template:
+        metadata: {}
+        spec:
+          containers:
+          - command:
+            - /bin/sh
+            - -c
+            - |
+              echo "PermitRootLogin yes" > /etc/ssh/sshd_config.d/root_login.conf
+              echo "StrictModes no" >> /etc/ssh/sshd_config.d/root_login.conf
+              echo "[`date`] Starting SSH server..."
+              mkdir -p /var/run/sshd && /usr/sbin/sshd -D
+            image: maifalcon.azurecr.io/mai/mai-diagnostics:c79a0e1eaac6fbcc1aceaefd4b080c7461d964e6-linux-arm64
+            name: nccl-worker
+            resources:
+              limits:
+                cpu: "120"
+                memory: 700Gi
+                nvidia.com/gpu: "4"
+              requests:
+                cpu: "120"
+                memory: 700Gi
+                nvidia.com/gpu: "4"
+            securityContext:
+              privileged: true
+            volumeMounts:
+            - mountPath: /dev/infiniband
+              name: infiniband
+            - mountPath: /dev/shm
+              name: dshm
+          tolerations:
+          - effect: NoSchedule
+            key: mai/compute
+            operator: Exists
+          - effect: NoSchedule
+            key: mai/gpu
+            operator: Exists
+          - effect: NoSchedule
+            key: mai/node-certification
+            operator: Exists
+          volumes:
+          - hostPath:
+              path: /dev/infiniband
+            name: infiniband
+          - emptyDir:
+              medium: Memory
+              sizeLimit: 400Gi
+            name: dshm
+  runLauncherAsWorker: false
+  runPolicy:
+    backoffLimit: 0
+    cleanPodPolicy: Running
+    suspend: false
+  slotsPerWorker: 4
+  sshAuthMountPath: /root/.ssh

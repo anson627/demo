@@ -1,0 +1,38 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: fiopod
+spec:
+  nodeSelector:
+    "kubernetes.io/os": linux
+  tolerations:
+  - key: "mai/compute"
+    operator: "Equal"
+    value: "true"
+    effect: "NoSchedule"
+  - key: "mai/node-certification"
+    operator: "Equal"
+    value: "true"
+    effect: "NoSchedule"
+  - key: mai/node-ready
+    operator: "Equal"
+    value: "false"
+    effect: "NoSchedule"
+  containers:
+    - name: fio
+      image: openeuler/fio
+      args: ["sleep", "1000000"]
+      volumeMounts:
+        - mountPath: "/volume"
+          name: ephemeralvolume
+  volumes:
+    - name: ephemeralvolume
+      ephemeral:
+        volumeClaimTemplate:
+          spec:
+            volumeMode: Filesystem
+            accessModes: ["ReadWriteOnce"]
+            storageClassName: local
+            resources:
+              requests:
+                storage: 10Gi
