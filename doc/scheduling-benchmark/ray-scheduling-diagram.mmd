@@ -1,23 +1,24 @@
+%%{init: {'themeVariables': {'background': '#294751', 'lineColor': '#e0f2ff'}}}%%
 graph TB
     CP[K8s Control Plane]
     CL2[clusterloader2]
 
-    subgraph "K8s CPU Nodes"
-        subgraph "Node 1"
+    subgraph cp_cluster["K8s CPU Nodes"]
+        subgraph node1["Node 1"]
             KRO[kuberay-operator]
             MRH[mock-ray-head]
         end
 
-        subgraph "Node 2"
+        subgraph node2["Node 2"]
             KC[kwok-controller]
         end
 
-        subgraph "Node 3"
+        subgraph node3["Node 3"]
             PG[prometheus/grafana]
         end
     end
 
-    subgraph "Virtual GPU Nodes (kwok)"
+    subgraph gpu_cluster["Virtual GPU Nodes (kwok)"]
         GPU1[kwok-gpu-node-1]
         GPU2[kwok-gpu-node-2]
         GPUN[kwok-gpu-node-n...]
@@ -47,8 +48,8 @@ graph TB
     PG -.->|scrape metrics| CP
 
     classDef controlPlane fill:#e1f5fe
-    classDef cpuNode fill:#f3e5f5
-    classDef gpuNode fill:#e8f5e8
+    classDef cpuNode fill:#1f3a5b,stroke:#7fb3d5,color:#e0f2ff
+    classDef gpuNode fill:#184040,stroke:#5fb0b5,color:#e0f2ff
     classDef workload fill:#fff3e0
     classDef component fill:#fce4ec
 
@@ -56,3 +57,9 @@ graph TB
     class KRO,KC,MRH,PG component
     class GPU1,GPU2,GPUN gpuNode
     class CL2 workload
+
+    style cp_cluster fill:#123652,stroke:#7fb3d5,color:#e0f2ff
+    style gpu_cluster fill:#0f3b3b,stroke:#5fb0b5,color:#e0f2ff
+    style node1 fill:#0f2740,stroke:#7fb3d5,color:#e0f2ff
+    style node2 fill:#0f2740,stroke:#7fb3d5,color:#e0f2ff
+    style node3 fill:#0f2740,stroke:#7fb3d5,color:#e0f2ff
