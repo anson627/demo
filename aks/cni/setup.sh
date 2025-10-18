@@ -24,11 +24,14 @@ else
         -n ${CLUSTER_NAME} \
         --tier standard \
         --kubernetes-version 1.33.3 \
-        --network-plugin none
+        --network-plugin none \
+        --disable-disk-driver \
+        --disable-file-driver \
+        --ssh-key-value ~/.ssh/id_rsa.pub \
         --nodepool-name system \
         --vm-set-type "VirtualMachines" \
         --node-vm-size ${SYSTEM_VM_SIZE} \
-        --node-count ${SYSTEM_POOL_SIZE} \
+        --node-count ${SYSTEM_POOL_SIZE}
 fi
 
 if az aks nodepool show --resource-group ${RESOURCE_GROUP} --cluster-name ${CLUSTER_NAME} --name ${USER_POOL_NAME} &>/dev/null; then
