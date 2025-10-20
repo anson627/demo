@@ -1,10 +1,14 @@
 #!/bin/bash
 
 expect_completed=$1
+buffer_rate=${2:-0.01}
+wait_interval=${3:-30}
+
 echo "waiting for $expect_completed Jobs to be completed successfully"
+echo "using buffer failure rate: $buffer_rate, wait interval: ${wait_interval}s"
 
 while true; do
-    sleep 30
+    sleep "$wait_interval"
 
     num_completed=0
     num_failed=0
@@ -79,7 +83,7 @@ while true; do
     echo "  Pending: $num_pending"
     echo "  Failed: $num_failed"
 
-    buffer=$(echo "$expect_completed * 0.01" | bc)
+    buffer=$(echo "$expect_completed * $buffer_rate" | bc)
     min_completed=$(printf "%.0f" "$(echo "$expect_completed - $buffer" | bc)")
     if [[ "$num_completed" -ge "$min_completed" ]]; then
         break;
