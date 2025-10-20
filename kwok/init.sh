@@ -7,7 +7,6 @@
 # kubectl create configmap kwok -n kube-system --from-file=config/kwok.yaml
 
 # kubectl patch deployment kwok-controller -n kube-system -p '{"spec":{"template":{"spec":{"nodeSelector":{"agentpool":"user"}}}}}'
-# kubectl apply -f config/device-class.yaml
 
 #    --runtime kind \
 kwokctl create cluster \
@@ -18,5 +17,6 @@ kwokctl create cluster \
     --kwok-controller-image registry.k8s.io/kwok/kwok:v0.7.0 \
     -c config/kwokctl.yaml \
     --kube-scheduler-config config/kube-scheduler.yaml
-
-docker run -d --name=grafana -p 3000:3000 docker.io/grafana/grafana:9.4.7
+    
+ kubectl apply -f config/device-class.yaml
+# docker run -d --name=grafana -p 3000:3000 docker.io/grafana/grafana:9.4.7
