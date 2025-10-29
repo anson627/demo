@@ -25,7 +25,6 @@ else
         --disable-disk-driver \
         --disable-file-driver \
         --nodepool-name system \
-        --vm-set-type "VirtualMachines" \
         --node-vm-size ${SYSTEM_VM_SIZE} \
         --node-count ${SYSTEM_POOL_SIZE} \
         --network-plugin none \
@@ -45,7 +44,6 @@ for i in $(seq 1 ${USER_POOL_COUNT}); do
             --resource-group ${RESOURCE_GROUP} \
             --cluster-name ${CLUSTER_NAME} \
             --name ${USER_POOL_NAME} \
-            --vm-set-type "VirtualMachines" \
             --node-vm-size ${USER_VM_SIZE} \
             --node-count ${USER_POOL_SIZE} \
             --aks-custom-headers AKSHTTPCustomFeatures=Microsoft.ContainerService/UseCustomizedOSImage,OSImageSubscriptionID=$IMAGE_SUB_ID,OSImageResourceGroup=$IMAGE_RG,OSImageGallery=$IMAGE_GALLERY,OSImageName=$IMAGE_NAME,OSImageVersion=$IMAGE_VERSION
