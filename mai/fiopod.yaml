@@ -27,12 +27,4 @@ spec:
           name: ephemeralvolume
   volumes:
     - name: ephemeralvolume
-      ephemeral:
-        volumeClaimTemplate:
-          spec:
-            volumeMode: Filesystem
-            accessModes: ["ReadWriteOnce"]
-            storageClassName: local
-            resources:
-              requests:
-                storage: 10Gi
+      emptyDir: {}
