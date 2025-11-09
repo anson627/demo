@@ -37,7 +37,11 @@ fi
 for i in $(seq 1 ${USER_POOL_COUNT}); do
     USER_POOL_NAME=user${i}
     if az aks nodepool show --resource-group ${RESOURCE_GROUP} --cluster-name ${CLUSTER_NAME} --name ${USER_POOL_NAME} &>/dev/null; then
-        echo "User pool ${i} already exists."
+        echo "User pool ${i} already exists. Deleting ..."
+        # az aks nodepool delete \
+        #     --resource-group ${RESOURCE_GROUP} \
+        #     --cluster-name ${CLUSTER_NAME} \
+        #     --name ${USER_POOL_NAME}
     else
         echo "User pool ${i} does not exist. Creating ..."
         az aks nodepool add \
