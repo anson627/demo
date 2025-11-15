@@ -1,11 +1,8 @@
-SUBSCRIPTION=137f0351-8235-42a6-ac7a-6b46be2d21c7
-LOCATION=eastus2
-RESOURCE_GROUP=ipv6-test
-CLUSTER_NAME=ipvlan
-SYSTEM_VM_SIZE=Standard_D8ds_v5
-SYSTEM_POOL_SIZE=2
-USER_VM_SIZE=Standard_D8ds_v5
-USER_POOL_SIZE=1
+#!/bin/bash
+
+set -eo pipefail
+
+source variables.sh
 
 az account set -s ${SUBSCRIPTION}
 if az group show -n ${RESOURCE_GROUP} &>/dev/null; then
@@ -24,7 +21,9 @@ else
         -n ${CLUSTER_NAME} \
         --tier standard \
         --kubernetes-version 1.33.3 \
-        --network-plugin none \
+        --network-plugin azure \
+        --network-plugin-mode overlay \
+        --network-dataplane cilium \
         --disable-disk-driver \
         --disable-file-driver \
         --ssh-key-value ~/.ssh/id_rsa.pub \
@@ -34,13 +33,14 @@ else
         --node-count ${SYSTEM_POOL_SIZE}
 fi
 
-if az aks nodepool show --resource-group ${RESOURCE_GROUP} --cluster-name ${CLUSTER_NAME} --name ${USER_POOL_NAME} &>/dev/null; then
+if az aks nodepool show --resource-group ${RESOURCE_GROUP} --cluster-name ${CLUSTER_NAME} --name user &>/dev/null; then
     echo "User pool already exists."
 else
   az aks nodepool add \
     --resource-group ${RESOURCE_GROUP} \
     --cluster-name $CLUSTER_NAME \
     --name user \
+    --localdns-config ./localdnsconfig.json \
     --vm-set-type "VirtualMachines" \
     --node-vm-size ${USER_VM_SIZE} \
     --node-count ${USER_POOL_SIZE}

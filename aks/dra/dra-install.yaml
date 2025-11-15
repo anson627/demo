@@ -1,0 +1,14 @@
+ gpuResourcesEnabledOverride: true
+ resources-computeDomains:
+   enabled: false # We'll be using GPUs, not compute domains.
+ controller:
+   affinity:
+     nodeAffinity:
+       requiredDuringSchedulingIgnoredDuringExecution:
+         nodeSelectorTerms:
+         - matchExpressions:
+           - key: kubernetes.azure.com/mode
+             operator: In
+             values:
+             - system   # Makes sure system nodes are utilized 
+ nvidiaDriverRoot: "/run/nvidia/driver"

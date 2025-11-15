@@ -9,7 +9,7 @@ if az group show -n ${RESOURCE_GROUP} &>/dev/null; then
     echo "Resource group already exists."
 else
     echo "Resource group does not exist. Creating ..."
-    az group create -l ${LOCATION} -n ${RESOURCE_GROUP}
+    az group create -l ${LOCATION} -n ${RESOURCE_GROUP} --tags SkipAKSCluster=1 SkipASB_Audit=true
 fi
 
 if az aks show -g ${RESOURCE_GROUP} -n ${CLUSTER_NAME} &>/dev/null; then
@@ -20,15 +20,16 @@ else
         -g ${RESOURCE_GROUP} \
         -n ${CLUSTER_NAME} \
         --tier standard \
-        --kubernetes-version 1.33.2 \
+        --kubernetes-version 1.34.0 \
+        --disable-disk-driver \
+        --disable-file-driver \
         --nodepool-name system \
         --node-vm-size ${SYSTEM_VM_SIZE} \
         --node-count ${SYSTEM_POOL_SIZE} \
-        --network-plugin azure \
-        --network-plugin-mode overlay
+        --network-plugin azure
 fi
 
-if az aks nodepool show --resource-group ${RESOURCE_GROUP} --cluster-name ${CLUSTER_NAME} --name ${USER_POOL_NAME} &>/dev/null; then
+if az aks nodepool show --resource-group ${RESOURCE_GROUP} --cluster-name ${CLUSTER_NAME} --name user &>/dev/null; then
     echo "User pool already exists."
 else
     echo "User pool does not exist. Creating ..."
@@ -38,9 +39,22 @@ else
         --name user \
         --node-vm-size ${USER_VM_SIZE} \
         --node-count ${USER_POOL_SIZE} \
-        --skip-gpu-driver-install
+        --gpu-driver none 
 fi
 
 az aks get-credentials --resource-group ${RESOURCE_GROUP} \
     --name ${CLUSTER_NAME} \
     --overwrite-existing
+
+
+helm install --wait --generate-name -n gpu-operator \
+--create-namespace nvidia/gpu-operator \
+--version=v25.10.0 \
+-f operator-install.yaml
+
+
+helm install nvidia-dra-driver-gpu nvidia/nvidia-dra-driver-gpu \
+       --version="25.8.0" \ 
+       --create-namespace \
+       --namespace nvidia-dra-driver-gpu \
+       -f dra-install.yaml  

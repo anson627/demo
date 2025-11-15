@@ -1,0 +1,9 @@
+devicePlugin:
+  enabled: false
+  driver:
+    enabled: true
+  toolkit:
+    env:
+      # Limits containers running in _unprivileged_ mode from requesting access to arbitrary GPU devices 
+      - name: ACCEPT_NVIDIA_VISIBLE_DEVICES_ENVVAR_WHEN_UNPRIVILEGED
+        value: "false"
