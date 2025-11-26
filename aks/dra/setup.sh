@@ -48,13 +48,13 @@ az aks get-credentials --resource-group ${RESOURCE_GROUP} \
 
 
 helm install --wait --generate-name -n gpu-operator \
---create-namespace nvidia/gpu-operator \
---version=v25.10.0 \
--f operator-install.yaml
+    --create-namespace nvidia/gpu-operator \
+    --version=v25.10.0 \
+    -f operator-install.yaml
 
 
 helm install nvidia-dra-driver-gpu nvidia/nvidia-dra-driver-gpu \
-       --version="25.8.0" \ 
-       --create-namespace \
-       --namespace nvidia-dra-driver-gpu \
-       -f dra-install.yaml  
+    --version=25.8.0 \
+    --create-namespace \
+    --namespace nvidia-dra-driver-gpu \
+    -f dra-install.yaml
