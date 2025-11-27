@@ -20,15 +20,11 @@ else
         -g ${RESOURCE_GROUP} \
         -n ${CLUSTER_NAME} \
         --tier standard \
-        --kubernetes-version 1.33.3 \
-        --network-plugin azure \
-        --network-plugin-mode overlay \
-        --network-dataplane cilium \
+        --kubernetes-version 1.34.0 \
+        --network-plugin none \
         --disable-disk-driver \
         --disable-file-driver \
-        --ssh-key-value ~/.ssh/id_rsa.pub \
         --nodepool-name system \
-        --vm-set-type "VirtualMachines" \
         --node-vm-size ${SYSTEM_VM_SIZE} \
         --node-count ${SYSTEM_POOL_SIZE}
 fi
@@ -36,12 +32,11 @@ fi
 if az aks nodepool show --resource-group ${RESOURCE_GROUP} --cluster-name ${CLUSTER_NAME} --name user &>/dev/null; then
     echo "User pool already exists."
 else
+  # --localdns-config ./localdnsconfig.json \
   az aks nodepool add \
     --resource-group ${RESOURCE_GROUP} \
     --cluster-name $CLUSTER_NAME \
     --name user \
-    --localdns-config ./localdnsconfig.json \
-    --vm-set-type "VirtualMachines" \
     --node-vm-size ${USER_VM_SIZE} \
     --node-count ${USER_POOL_SIZE}
  fi
