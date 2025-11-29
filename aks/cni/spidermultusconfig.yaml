@@ -5,6 +5,7 @@ metadata:
   namespace: kube-system
 spec:
   cniType: ipvlan
+  enableCoordinator: true
   ipvlan:
     master:
     - eth0

@@ -9,11 +9,13 @@ spec:
   replicas: 2
   template:
     metadata:
-      annotations:
-        v1.multus-cni.io/default-network: "kube-system/ipvlan-eth0"
       labels:
         run: nginx-lb
+      annotations:
+        v1.multus-cni.io/default-network: "kube-system/ipvlan-eth0"
     spec:
+      nodeSelector:
+        kubernetes.azure.com/mode: user
       containers:
       - name: nginx-lb
         image: nginx
