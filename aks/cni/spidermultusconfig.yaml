@@ -1,0 +1,10 @@
+apiVersion: spiderpool.spidernet.io/v2beta1
+kind: SpiderMultusConfig
+metadata:
+  name: ipvlan-eth0
+  namespace: kube-system
+spec:
+  cniType: ipvlan
+  ipvlan:
+    master:
+    - eth0
