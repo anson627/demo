@@ -36,7 +36,8 @@ az aks get-credentials --resource-group "${RESOURCE_GROUP}" \
 python3 ipvlan.py \
   --resource-group "${RESOURCE_GROUP}" \
   --cluster-name "${CLUSTER_NAME}" \
-  --ipvlan-prefix-length "${IPVLAN_PREFIX_LENGTH}"
+  --ipvlan-prefix-length "${IPVLAN_PREFIX_LENGTH}" \
+  --boostrap-cni-config
     
 # helm repo add spiderpool https://spidernet-io.github.io/spiderpool
 # helm repo update spiderpool

@@ -9,7 +9,6 @@ import ipaddress
 subnet_cache = {}
 
 def run_az(args, capture=True):
-  print(args)
   cmd = ["az", *args]
   result = subprocess.run(cmd, capture_output=capture, text=True)
   if result.returncode != 0:
@@ -202,7 +201,6 @@ def main():
       continue
     if args.boostrap_cni_config:
       boostrap_cni_config(node_rg, nic_name, vm_name, ipvlan_cfg)
-
 
 if __name__ == "__main__":
   main()
