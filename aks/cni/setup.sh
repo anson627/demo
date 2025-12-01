@@ -33,12 +33,12 @@ az aks get-credentials --resource-group "${RESOURCE_GROUP}" \
     --name "${CLUSTER_NAME}" \
     --overwrite-existing
     
-python3 ipvlan.py \
-  --resource-group "${RESOURCE_GROUP}" \
-  --cluster-name "${CLUSTER_NAME}" \
-  --ipvlan-prefix-length "${IPVLAN_PREFIX_LENGTH}" \
-  --boostrap-cni-config
+# python3 azure.py \
+#   --resource-group "${RESOURCE_GROUP}" \
+#   --cluster-name "${CLUSTER_NAME}" \
+#   --ipvlan-prefix-length "${IPVLAN_PREFIX_LENGTH}" \
+#   --boostrap-cni-config
     
 # helm repo add spiderpool https://spidernet-io.github.io/spiderpool
 # helm repo update spiderpool
-# helm install spiderpool spiderpool/spiderpool --namespace kube-system --set ipam.enableStatefulSet=false --set multus.multusCNI.defaultCniCRName="ipvlan-eth0"
+# helm install spiderpool spiderpool/spiderpool --namespace spiderpool --create-namespace --set ipam.enableStatefulSet=false --set multus.multusCNI.defaultCniCRName="ipvlan-eth0"
