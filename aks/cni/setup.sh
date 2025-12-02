@@ -33,11 +33,11 @@ az aks get-credentials --resource-group "${RESOURCE_GROUP}" \
     --name "${CLUSTER_NAME}" \
     --overwrite-existing
     
-# python3 azure.py \
-#   --resource-group "${RESOURCE_GROUP}" \
-#   --cluster-name "${CLUSTER_NAME}" \
-#   --ipvlan-prefix-length "${IPVLAN_PREFIX_LENGTH}" \
-#   --boostrap-cni-config
+python3 setup.py \
+  --resource-group "${RESOURCE_GROUP}" \
+  --cluster-name "${CLUSTER_NAME}" \
+  --ipvlan-prefix-length "${IPVLAN_PREFIX_LENGTH}" \
+  --boostrap-cni-config
     
 # helm repo add spiderpool https://spidernet-io.github.io/spiderpool
 # helm repo update spiderpool
