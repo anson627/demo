@@ -1,6 +1,0 @@
-gfd:
-  enabled: true
-devicePlugin:
-  enabled: false
-driver:
-  enabled: true

@@ -1,6 +1,0 @@
- resources:
-  gpus:
-    enabled: false
-  computeDomains:
-    enabled: true
- nvidiaDriverRoot: "/run/nvidia/driver"

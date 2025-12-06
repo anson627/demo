@@ -33,8 +33,8 @@ if az aks nodepool show --resource-group ${RESOURCE_GROUP} --cluster-name ${CLUS
     echo "User pool already exists."
 else
     echo "User pool does not exist. Creating ..."
-#--tags "TipNode.SessionId=${TIP_SESSION_ID}" \
-#--aks-custom-headers "AKSHTTPCustomFeatures=Microsoft.ContainerService/UseCustomizedOSImage,OSImageSubscriptionID=${IMAGE_SUB_ID},OSImageResourceGroup=${IMAGE_RG},OSImageGallery=${IMAGE_GALLERY},OSImageName=${IMAGE_NAME},OSImageVersion=${IMAGE_VERSION}"
+    # --tags "TipNode.SessionId=${TIP_SESSION_ID}" \
+    # --aks-custom-headers "AKSHTTPCustomFeatures=Microsoft.ContainerService/UseCustomizedOSImage,OSImageSubscriptionID=${IMAGE_SUB_ID},OSImageResourceGroup=${IMAGE_RG},OSImageGallery=${IMAGE_GALLERY},OSImageName=${IMAGE_NAME},OSImageVersion=${IMAGE_VERSION}" \
     az aks nodepool add \
         --resource-group ${RESOURCE_GROUP} \
         --cluster-name ${CLUSTER_NAME} \
@@ -49,15 +49,25 @@ az aks get-credentials --resource-group ${RESOURCE_GROUP} \
     --overwrite-existing
 
 
-# helm install gpu-operator nvidia/gpu-operator \
-#     --version=v25.10.0 \
-#     --create-namespace \
-#     --namespace gpu-operator \
-#     -f gpu-install.yaml
+helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
+helm repo update
+
+helm upgrade --install \
+  --create-namespace -n network-operator \
+  network-operator nvidia/network-operator \
+  -f network-values.yaml \
+  --version v25.7.0
+
+
+helm install gpu-operator nvidia/gpu-operator \
+    --version=v25.10.0 \
+    --create-namespace \
+    --namespace gpu-operator \
+    -f gpu-values.yaml
 
 
 # helm upgrade nvidia-dra-driver-gpu nvidia/nvidia-dra-driver-gpu \
 #     --version=25.8.0 \
 #     --create-namespace \
 #     --namespace nvidia-dra-driver-gpu \
-#     -f dra-install.yaml
+#     -f dra-values.yaml
