@@ -52,12 +52,13 @@ az aks get-credentials --resource-group ${RESOURCE_GROUP} \
 helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
 helm repo update
 
-helm upgrade --install \
-  --create-namespace -n network-operator \
-  network-operator nvidia/network-operator \
-  -f network-values.yaml \
-  --version v25.7.0
+helm install network-operator nvidia/network-operator \
+  --version v25.7.0 \
+  --create-namespace \
+  --namespace network-operator \
+  -f network-values.yaml 
 
+kubectl apply -f nfd-network-rules.yaml
 
 helm install gpu-operator nvidia/gpu-operator \
     --version=v25.10.0 \
@@ -65,6 +66,7 @@ helm install gpu-operator nvidia/gpu-operator \
     --namespace gpu-operator \
     -f gpu-values.yaml
 
+kubectl apply -f nic-cluster-policy.yaml
 
 # helm upgrade nvidia-dra-driver-gpu nvidia/nvidia-dra-driver-gpu \
 #     --version=25.8.0 \
