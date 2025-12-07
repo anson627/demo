@@ -59,14 +59,13 @@ helm install network-operator nvidia/network-operator \
   -f network-values.yaml 
 
 kubectl apply -f nfd-network-rules.yaml
+kubectl apply -f nic-cluster-policy.yaml
 
 helm install gpu-operator nvidia/gpu-operator \
     --version=v25.10.0 \
     --create-namespace \
     --namespace gpu-operator \
     -f gpu-values.yaml
-
-kubectl apply -f nic-cluster-policy.yaml
 
 # helm upgrade nvidia-dra-driver-gpu nvidia/nvidia-dra-driver-gpu \
 #     --version=25.8.0 \

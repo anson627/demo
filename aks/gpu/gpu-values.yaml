@@ -12,9 +12,3 @@ vfioManager:
   enabled: false  # VFIO-PCI passthrough not used
 sandboxDevicePlugin:
   enabled: false  # Sandboxed workloads not enabled
-
-dcgmExporter:
-  config:
-    name: ""
-    create: false
-    data: ""
