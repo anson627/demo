@@ -4,6 +4,7 @@ set -euo pipefail
 
 source variables.sh
 
+az account set -s ${SUBSCRIPTION}
 if az group show -n "${RESOURCE_GROUP}" &>/dev/null; then
     echo "Resource group already exists."
 else

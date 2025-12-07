@@ -1,12 +1,13 @@
 apiVersion: spiderpool.spidernet.io/v2beta1
 kind: SpiderIPPool
 metadata:
-  name: aks-system-27117018-vms21
+  name: aks-system-26851832-vmss000001
+  namespace: spiderpool
 spec:
   subnet: 10.224.0.16/28
   ips:
     - 10.224.0.18-10.224.0.30
   gateway: 10.224.0.17
   default: true
-  nodeName: ["aks-system-27117018-vms21"]
-  multusName: ["default/ipvlan-eth0"]
+  nodeName: ["aks-system-26851832-vmss000001"]
+  multusName: ["spiderpool/ipvlan-eth0"]

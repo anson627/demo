@@ -2,7 +2,7 @@ apiVersion: spiderpool.spidernet.io/v2beta1
 kind: SpiderMultusConfig
 metadata:
   name: ipvlan-eth0
-  namespace: default
+  namespace: spiderpool
 spec:
   cniType: ipvlan
   enableCoordinator: true
