@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubeadm-config
+  namespace: kube-system
+data:
+  ClusterConfiguration: |
+    networking:
+      serviceSubnet: 10.0.0.0/16
+      podSubnet: 10.224.0.0/16

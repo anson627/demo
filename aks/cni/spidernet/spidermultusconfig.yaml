@@ -5,7 +5,6 @@ metadata:
   namespace: spiderpool
 spec:
   cniType: ipvlan
-  enableCoordinator: true
   ipvlan:
-    master:
-    - eth0
+      master:
+      - eth0

@@ -66,7 +66,7 @@ def scan_node_nics(node_rg):
   return results
 
 
-def boostrap_cni_config(node_rg, nic_name, vm_name, ipvlan_cfg):
+def boostrap_cni_config(node_rg, nic_name, vm_name, ipvlan_cfg, dry_run):
   if not vm_name or vm_name == "null":
     print(f"NIC {nic_name} not attached to a VM; skipping CNI config.")
     return
@@ -102,6 +102,8 @@ def boostrap_cni_config(node_rg, nic_name, vm_name, ipvlan_cfg):
   }
   ipvlan_payload = base64.b64encode(json.dumps(config, indent=2).encode()).decode()
   print(f"Pushing ipvlan CNI config with subnet {ipvlan_cidr}, rangeStart {start}, rangeEnd {end} to VM {vm_name}...")
+  if dry_run:
+    return
   scripts = [
     f"echo {ipvlan_payload} | base64 -d | tee /etc/cni/net.d/01-ipvlan-eth0.conf",
     f"ip addr replace {ipvlan_cidr} dev eth0",
@@ -114,7 +116,6 @@ def boostrap_cni_config(node_rg, nic_name, vm_name, ipvlan_cfg):
     "--command-id", "RunShellScript",
     "--scripts", " & ".join(scripts)
   ])
-
 
 def derive_range(ip_addr):
   network = ipaddress.IPv4Network(ip_addr, strict=False)
@@ -174,7 +175,7 @@ def main():
   parser.add_argument("--resource-group", required=True)
   parser.add_argument("--cluster-name", required=True)
   parser.add_argument("--ipvlan-prefix-length", type=int, default=28)
-  parser.add_argument("--boostrap-cni-config", type=bool, default=False)
+  parser.add_argument("--dry-run", type=bool, default=True)
   args = parser.parse_args()
 
   node_rg = run_az([
@@ -199,8 +200,7 @@ def main():
     if not ipvlan_cfg:
       print(f"NIC {nic_name} does not yet have an ipvlan IP config; skipping CNI config push.")
       continue
-    if args.boostrap_cni_config:
-      boostrap_cni_config(node_rg, nic_name, vm_name, ipvlan_cfg)
+    boostrap_cni_config(node_rg, nic_name, vm_name, ipvlan_cfg, args.dry_run)
 
 if __name__ == "__main__":
   main()
