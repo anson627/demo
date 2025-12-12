@@ -67,8 +67,8 @@ helm install gpu-operator nvidia/gpu-operator \
     --namespace gpu-operator \
     -f gpu-values.yaml
 
-# helm upgrade nvidia-dra-driver-gpu nvidia/nvidia-dra-driver-gpu \
-#     --version=25.8.0 \
-#     --create-namespace \
-#     --namespace nvidia-dra-driver-gpu \
-#     -f dra-values.yaml
+helm install nvidia-dra-driver-gpu nvidia/nvidia-dra-driver-gpu \
+    --version=25.8.0 \
+    --create-namespace \
+    --namespace nvidia-dra-driver-gpu \
+    -f dra-values.yaml
