@@ -1,8 +1,8 @@
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: ResourceFlavor
 metadata:
-  name: kwok-resource-flavor-a-east-r1
+  name: kwok-resource-flavor
 spec:
   nodeLabels:
     type: kwok
-  topologyName:  kwok-topology
+  topologyName: kwok-topology

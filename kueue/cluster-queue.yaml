@@ -3,7 +3,7 @@ kind: ClusterQueue
 metadata:
   name: kwok-cluster-queue
 spec:
-  cohort: kwok
+  cohort: kwok-cohort
   flavorFungibility:
     whenCanBorrow: Borrow
     whenCanPreempt: TryNextFlavor
@@ -18,17 +18,13 @@ spec:
   - coveredResources:
     - cpu
     - memory
-    - nvidia.com/gpu
     flavors:
-    - name: kwok
+    - name: kwok-resource-flavor
       resources:
       - borrowingLimit: "390144"
         name: cpu
-        nominalQuota: "0"
+        nominalQuota: "1000"
       - borrowingLimit: 2568Ti
         name: memory
-        nominalQuota: "0"
-      - borrowingLimit: "12184"
-        name: nvidia.com/gpu
-        nominalQuota: "0"
+        nominalQuota: 1Ti
   stopPolicy: None
