@@ -7,14 +7,7 @@ metadata:
     app: pod
 spec:
   containers:
-  - name: ctr0
-    image: ubuntu:22.04
-    command: ["bash", "-c"]
-    args: ["nvidia-smi -L; trap 'exit 0' TERM; sleep 9999 & wait"]
-    resources:
-      claims:
-      - name: shared-gpu
-  - name: ctr1
+  - name: main
     image: ubuntu:22.04
     command: ["bash", "-c"]
     args: ["nvidia-smi -L; trap 'exit 0' TERM; sleep 9999 & wait"]
@@ -23,7 +16,7 @@ spec:
       - name: shared-gpu
   resourceClaims:
   - name: shared-gpu
-    resourceClaimTemplateName: single-gpu
+    resourceClaimTemplateName: 2-gpu-nic-aligned
   tolerations:
   - key: "nvidia.com/gpu"
     operator: "Exists"

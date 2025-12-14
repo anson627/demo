@@ -1,4 +1,7 @@
 gpuResourcesEnabledOverride: true
+resources:
+  computeDomains:
+   enabled: false 
 controller:
   affinity:
     nodeAffinity:
