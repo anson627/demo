@@ -20,7 +20,7 @@ else
         -g ${RESOURCE_GROUP} \
         -n ${CLUSTER_NAME} \
         --tier standard \
-        --kubernetes-version 1.34.0 \
+        --kubernetes-version 1.33.5 \
         --disable-disk-driver \
         --disable-file-driver \
         --nodepool-name system \
