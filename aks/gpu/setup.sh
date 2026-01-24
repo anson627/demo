@@ -9,7 +9,7 @@ if az group show -n ${RESOURCE_GROUP} &>/dev/null; then
     echo "Resource group already exists."
 else
     echo "Resource group does not exist. Creating ..."
-    az group create -l ${LOCATION} -n ${RESOURCE_GROUP} --tags SkipAKSCluster=1 SkipASB_Audit=true
+    az group create -l ${LOCATION} -n ${RESOURCE_GROUP} --tags SkipAKSCluster=1 SkipASB_Audit=true SkipLinuxAzSecPack=true
 fi
 
 if az aks show -g ${RESOURCE_GROUP} -n ${CLUSTER_NAME} &>/dev/null; then
