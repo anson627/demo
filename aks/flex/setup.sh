@@ -9,7 +9,7 @@ if az group show -n "${RESOURCE_GROUP}" &>/dev/null; then
     echo "Resource group already exists."
 else
     echo "Resource group does not exist. Creating ..."
-    az group create -l "${LOCATION}" -n "${RESOURCE_GROUP}" --tags SkipAKSCluster=1 SkipASB_Audit=true
+    az group create -l "${LOCATION}" -n "${RESOURCE_GROUP}" --tags SkipAKSCluster=1 SkipASB_Audit=true SkipLinuxAzSecPack=true
 fi
 
 if az aks show -g "${RESOURCE_GROUP}" -n "${CLUSTER_NAME}" &>/dev/null; then
@@ -20,7 +20,10 @@ else
         -g "${RESOURCE_GROUP}" \
         -n "${CLUSTER_NAME}" \
         --tier standard \
-        --kubernetes-version 1.34.0 \
+        --kubernetes-version 1.34.1 \
+        --enable-aad \
+        --enable-azure-rbac \
+        --aad-admin-group-object-ids "8a5603a8-2c60-49ab-bc28-a989b91e187d" \
         --network-plugin none \
         --disable-disk-driver \
         --disable-file-driver \
@@ -34,12 +37,8 @@ az aks get-credentials --resource-group "${RESOURCE_GROUP}" \
     --name "${CLUSTER_NAME}" \
     --overwrite-existing
     
-python3 setup.py \
-  --resource-group "${RESOURCE_GROUP}" \
-  --cluster-name "${CLUSTER_NAME}" \
-  --ipvlan-prefix-length "${IPVLAN_PREFIX_LENGTH}" \
-  --dry-run
-    
-# helm repo add spiderpool https://spidernet-io.github.io/spiderpool
-# helm repo update spiderpool
-# helm install spiderpool spiderpool/spiderpool --namespace spiderpool --create-namespace --set ipam.enableStatefulSet=false --set multus.multusCNI.defaultCniCRName="ipvlan-eth0"
+# python3 setup.py \
+#   --resource-group "${RESOURCE_GROUP}" \
+#   --cluster-name "${CLUSTER_NAME}" \
+#   --ipvlan-prefix-length "${IPVLAN_PREFIX_LENGTH}" \
+#   --dry-run
