@@ -9,7 +9,7 @@ if az group show -n ${RESOURCE_GROUP} &>/dev/null; then
     echo "Resource group already exists."
 else
     echo "Resource group does not exist. Creating ..."
-    az group create -l ${LOCATION} -n ${RESOURCE_GROUP} --tags SkipAKSCluster=1 SkipASB_Audit=true SkipLinuxAzSecPack=true
+    az group create -l ${LOCATION} -n ${RESOURCE_GROUP} --tags SkipAKSCluster=1 SkipASB_Audit=true SkipLinuxAzSecPack=true exempted_by_qi=36250079
 fi
 
 if az aks show -g ${RESOURCE_GROUP} -n ${CLUSTER_NAME} &>/dev/null; then
@@ -21,7 +21,7 @@ else
         -g ${RESOURCE_GROUP} \
         -n ${CLUSTER_NAME} \
         --tier standard \
-        --kubernetes-version 1.33.3 \
+        --kubernetes-version 1.34.1 \
         --disable-disk-driver \
         --disable-file-driver \
         --nodepool-name system \
