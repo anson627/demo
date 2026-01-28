@@ -1,16 +1,16 @@
 # Dataplane Developer
-SUBSCRIPTION=8643025a-c059-4a48-85d0-d76f51d63a74
+# SUBSCRIPTION=8643025a-c059-4a48-85d0-d76f51d63a74
 
 # A100
-LOCATION=eastus
-USER_VM_SIZE=Standard_ND96asr_v4
+# LOCATION=eastus
+# USER_VM_SIZE=Standard_ND96asr_v4
 
 # ACS Test
-# SUBSCRIPTION=8ecadfc9-d1a3-4ea4-b844-0d9f87e4d7c8
+SUBSCRIPTION=8ecadfc9-d1a3-4ea4-b844-0d9f87e4d7c8
 
 # H100
-# LOCATION=uaenorth
-# USER_VM_SIZE=Standard_ND96isr_H100_v5
+LOCATION=uaenorth
+USER_VM_SIZE=Standard_ND96isr_H100_v5
 
 # GB200
 # LOCATION="centraluseuap"

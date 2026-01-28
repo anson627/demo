@@ -16,8 +16,7 @@ if az aks show -g ${RESOURCE_GROUP} -n ${CLUSTER_NAME} &>/dev/null; then
     echo "Cluster already exists."
 else
 #        --tags "TipNode.SessionId=${TIP_SESSION_ID}" \
-#        --aks-custom-headers "AKSHTTPCustomFeatures=Microsoft.ContainerService/UseCustomizedOSImage,OSImageSubscriptionID=${IMAGE_SUB_ID},OSImageResou
-rceGroup=${IMAGE_RG},OSImageGallery=${IMAGE_GALLERY},OSImageName=${IMAGE_NAME},OSImageVersion=${IMAGE_VERSION}" \
+#        --aks-custom-headers "AKSHTTPCustomFeatures=Microsoft.ContainerService/UseCustomizedOSImage,OSImageSubscriptionID=${IMAGE_SUB_ID},OSImageResourceGroup=${IMAGE_RG},OSImageGallery=${IMAGE_GALLERY},OSImageName=${IMAGE_NAME},OSImageVersion=${IMAGE_VERSION}" \
     echo "Cluster does not exist. Creating ..."
     az aks create -l ${LOCATION} \
         -g ${RESOURCE_GROUP} \
