@@ -16,14 +16,15 @@ if az aks show -g "${RESOURCE_GROUP}" -n "${CLUSTER_NAME}" &>/dev/null; then
     echo "Cluster already exists."
 else
     echo "Cluster does not exist. Creating ..."
+    MY_USER_ID=$(az ad signed-in-user show --query id -o tsv)
+    #    --enable-azure-rbac \
     az aks create -l "${LOCATION}" \
         -g "${RESOURCE_GROUP}" \
         -n "${CLUSTER_NAME}" \
         --tier standard \
         --kubernetes-version 1.34.1 \
         --enable-aad \
-        --enable-azure-rbac \
-        --aad-admin-group-object-ids "8a5603a8-2c60-49ab-bc28-a989b91e187d" \
+        --aad-admin-group-object-ids "$MY_USER_ID" \
         --network-plugin none \
         --disable-disk-driver \
         --disable-file-driver \
@@ -33,9 +34,31 @@ else
         --node-count "${SYSTEM_POOL_SIZE}"
 fi
 
-az aks get-credentials --resource-group "${RESOURCE_GROUP}" \
-    --name "${CLUSTER_NAME}" \
+AKS_RESOURCE_ID=$(az aks show \
+  --resource-group "$RESOURCE_GROUP" \
+  --name "$CLUSTER_NAME" \
+  --query "id" \
+  --output tsv)
+
+MY_SP=$(az ad sp create-for-rbac \
+  --name "aks-owner-sp" \
+  --role "Owner" \
+  --scopes "$AKS_RESOURCE_ID")
+
+MY_SP_ID=$(echo "$MY_SP" | jq -r '.appId')
+MY_SP_SECRET=$(echo "$MY_SP" | jq -r '.password')
+TENANT_ID=$(echo "$MY_SP" | jq -r '.tenant')
+export MY_SP_ID MY_SP_SECRET TENANT_ID SUBSCRIPTION LOCATION AKS_RESOURCE_ID
+
+envsubst < config.template.json > config.json
+
+az aks get-credentials --resource-group $RESOURCE_GROUP \
+    --name $CLUSTER_NAME \
+    --admin \
     --overwrite-existing
+
+envsubst < config/node-bootstrapper-binding.yaml | kubectl apply -f -
+envsubst < config/node-role-binding.yaml | kubectl apply -f -
     
 # python3 setup.py \
 #   --resource-group "${RESOURCE_GROUP}" \
