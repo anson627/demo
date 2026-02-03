@@ -1,0 +1,23 @@
+%% Diagram 2: The Autoscaling Problem
+%% Illustrates why HPA fails for bursty LLM training workloads - the burst happens
+%% too quickly for autoscaling to react, leading to cascading failures
+
+graph TB
+    subgraph "The Autoscaling Problem"
+        A[Training Job Starts<br/>1000 Pods Launch] --> B[Massive DNS Burst<br/>5000+ queries in 5 seconds]
+        B --> C[CoreDNS Overwhelmed<br/>3 replicas @ 100% CPU]
+        C --> D[Queries Timeout<br/>5-30 second delays]
+        D --> E[HPA Detects High CPU<br/>After 15-30s]
+        E --> F[New CoreDNS Pods Launching<br/>60-90s to ready]
+        F --> G[TOO LATE<br/>Training pods already failed]
+
+        H[Meanwhile: conntrack table] --> I[Thousands of connections<br/>to 3 CoreDNS IPs]
+        I --> J[Conntrack table full<br/>nf_conntrack: table full]
+        J --> K[New connections dropped<br/>Additional failures]
+    end
+
+    style A fill:#FFB6C1
+    style B fill:#FF6B6B
+    style D fill:#FF0000
+    style G fill:#FF0000
+    style J fill:#FF0000

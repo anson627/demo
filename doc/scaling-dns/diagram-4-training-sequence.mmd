@@ -1,0 +1,60 @@
+%% Diagram 4: LLM Training Workflow Sequence
+%% Sequential flow of DNS queries through a complete training job lifecycle,
+%% from initial pod startup through training to node churn scenarios
+
+sequenceDiagram
+    participant Scheduler as Kubernetes Scheduler
+    participant Pod as Training Pod (1 of 1000)
+    participant NLD as NodeLocal DNS<br/>169.254.20.10
+    participant CoreDNS as CoreDNS Service
+    participant RayHead as Ray Head Service
+    participant Blob as Azure Blob Storage
+
+    Note over Scheduler,Blob: Phase 1: Job Startup (T=0s)
+
+    Scheduler->>Pod: Schedule pod to GPU node
+    Pod->>Pod: Container starts
+    Pod->>NLD: Query: ray-head-svc.kuberay-system.svc.cluster.local
+    NLD->>NLD: Cache MISS (first query)
+    NLD->>CoreDNS: Forward query (TCP)
+    CoreDNS->>CoreDNS: Kubernetes plugin lookup
+    CoreDNS->>NLD: Return: 10.0.45.123
+    NLD->>NLD: Cache entry (TTL: 30s)
+    NLD->>Pod: Return: 10.0.45.123
+
+    Note over Pod,RayHead: Pods 2-1000 query simultaneously
+
+    Pod->>NLD: Query: *.blob.core.windows.net
+    NLD->>NLD: Cache MISS
+    NLD->>CoreDNS: Forward query
+    CoreDNS->>CoreDNS: External DNS forward
+    CoreDNS->>NLD: Return: 20.38.47.52
+    NLD->>NLD: Cache entry (TTL: 300s)
+    NLD->>Pod: Return: 20.38.47.52
+
+    Pod->>RayHead: Connect to Ray cluster
+    Pod->>Blob: Load training data
+
+    Note over Scheduler,Blob: Phase 2: Training (T=60s - hours)
+
+    Pod->>NLD: Query: ray-head-svc (TTL expired)
+    NLD->>NLD: Prefetch triggered at 75% TTL
+    NLD->>Pod: Return: 10.0.45.123 (from cache)
+    NLD->>CoreDNS: Background refresh query
+
+    Pod->>NLD: Query: *.blob.core.windows.net
+    NLD->>NLD: Cache HIT (5min TTL)
+    NLD->>Pod: Return: 20.38.47.52 (<1ms)
+
+    Pod->>Blob: Save checkpoint
+
+    Note over Scheduler,Blob: Phase 3: Node Churn (T=2h)
+
+    Note over Pod: Node failure, pod rescheduled
+    Scheduler->>Pod: Reschedule to new GPU node
+    Pod->>NLD: Query: ray-head-svc
+    NLD->>NLD: Cache MISS (new node)
+    NLD->>CoreDNS: Forward query
+    CoreDNS->>CoreDNS: Cache HIT (cached in CoreDNS)
+    CoreDNS->>NLD: Return: 10.0.45.123 (fast)
+    NLD->>Pod: Rejoin training
