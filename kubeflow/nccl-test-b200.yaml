@@ -1,0 +1,89 @@
+apiVersion: kubeflow.org/v1
+kind: MPIJob
+metadata:
+  name: nccl-test-nebius
+spec:
+  slotsPerWorker: 8 # Number of GPUs on each node
+  mpiReplicaSpecs:
+    Launcher:
+      replicas: 1
+      template:
+        spec:
+          containers:
+          - args:
+            # In `-np 16`, 16 is the total number of GPUs on all nodes 
+            # (`.spec.slotsPerWorker` × `.spec.mpiReplicaSpecs.Worker.replicas`)
+            - 'mpirun -np 16 -bind-to none -x LD_LIBRARY_PATH 
+              -x NCCL_DEBUG=INFO -x NCCL_SOCKET_IFNAME=eth0 
+              -mca coll ^hcoll
+              -x UCX_NET_DEVICES=eth0
+              -x NCCL_IB_HCA=mlx5 
+              -x SHARP_COLL_ENABLE_PCI_RELAXED_ORDERING=1 
+              -x NCCL_COLLNET_ENABLE=0
+              /opt/nccl_tests/build/all_reduce_perf -b 512M -e 8G -f 2 -g 1'
+            command:
+            - /bin/bash
+            - -c
+            env:
+            - name: OMPI_ALLOW_RUN_AS_ROOT
+              value: "1"
+            - name: OMPI_ALLOW_RUN_AS_ROOT_CONFIRM
+              value: "1"
+            image: cr.eu-north1.nebius.cloud/nebius-benchmarks/nccl-tests:2.26.5-ubu22.04-cu12.8
+            name: nccl
+            resources:
+              requests:
+                cpu: 2
+                memory: 1208Mi
+            securityContext:
+              privileged: true
+          initContainers:
+          - command:
+            - sh
+            - -c
+            - ulimit -Hl unlimited && ulimit -Sl unlimited
+            image: busybox:1.27.2
+            name: init-limit
+            securityContext:
+              privileged: true
+    Worker:
+      replicas: 2 # Number of nodes
+      template:
+        spec:
+          automountServiceAccountToken: false
+          containers:
+          - image: cr.eu-north1.nebius.cloud/nebius-benchmarks/nccl-tests:2.26.5-ubu22.04-cu12.8
+            name: nccl
+            resources: 
+              # If you have other applications running in your cluster, 
+              # adjust the `cpu` and `memory` values according to 
+              # the resources available on the nodes
+              limits:
+                cpu: 96
+                memory: 1600G
+                nvidia.com/gpu: 8
+              requests:
+                cpu: 96
+                memory: 1600G
+                nvidia.com/gpu: 8
+            securityContext:
+              privileged: true
+            volumeMounts:
+            - mountPath: /dev/shm
+              name: dshm
+          enableServiceLinks: false
+          initContainers:
+          - command:
+            - sh
+            - -c
+            - ulimit -Hl unlimited && ulimit -Sl unlimited
+            image: busybox:1.27.2
+            name: init-limit
+            securityContext:
+              privileged: true
+          volumes:
+          - emptyDir:
+              medium: Memory
+            name: dshm
+  runPolicy:
+    cleanPodPolicy: Running
