@@ -22,7 +22,7 @@ else
         -g ${RESOURCE_GROUP} \
         -n ${CLUSTER_NAME} \
         --tier standard \
-        --kubernetes-version 1.34.1 \
+        --kubernetes-version 1.34.2 \
         --disable-disk-driver \
         --disable-file-driver \
         --nodepool-name system \
@@ -30,7 +30,6 @@ else
         --node-count ${SYSTEM_POOL_SIZE} \
         --network-plugin azure
 fi
-
 
 if az aks nodepool show --resource-group ${RESOURCE_GROUP} --cluster-name ${CLUSTER_NAME} --name user &>/dev/null; then
     echo "User pool already exists."
@@ -47,7 +46,12 @@ fi
 
 az aks get-credentials --resource-group ${RESOURCE_GROUP} \
     --name ${CLUSTER_NAME} \
+    --admin \
     --overwrite-existing
+    
+kubectl apply -f containerd/
+
+
 
 helm install gpu-operator nvidia/gpu-operator \
     --set devicePlugin.enabled=false \
