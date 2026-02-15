@@ -2,6 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: install-script
+  namespace: kube-system
 data:
   install-script.sh: |
     #!/usr/bin/env bash

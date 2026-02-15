@@ -51,15 +51,28 @@ az aks get-credentials --resource-group ${RESOURCE_GROUP} \
     
 kubectl apply -f containerd/
 
+helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
+helm repo update
 
+helm install network-operator nvidia/network-operator \
+    --set nfd.enabled=false \
+    --set operator.ofedDriver.deploy=true \
+    --set sriovNetworkOperator.enabled=true \
+    --create-namespace \
+    --namespace nvidia \
+    --wait
 
 helm install gpu-operator nvidia/gpu-operator \
+    --set driver.rdma.enabled=true \
+    --set driver.mofed.enabled=true \
     --set devicePlugin.enabled=false \
     --create-namespace \
-    --namespace gpu-operator
+    --namespace nvidia \
+    --wait
 
 helm install dra-driver nvidia/nvidia-dra-driver-gpu \
     --version=25.8.0 \
+    -f dra/values.yaml \
     --create-namespace \
-    --namespace dra-driver \
-    -f dra/values.yaml
+    --namespace nvidia \
+    --wait
