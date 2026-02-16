@@ -1,0 +1,38 @@
+graph TD
+    subgraph AKS["AKS Cluster (K8s 1.34.2)"]
+        subgraph CP["Control Plane"]
+            SCHED[kube-scheduler<br/>DRA-aware]
+        end
+
+        subgraph SYS["System Nodes (Standard_D16_v3)"]
+            NET_OP[Network Operator v25.10.0]
+            GPU_OP[GPU Operator v25.10.1]
+            DRA_CTRL[DRA Driver Controller]
+        end
+
+        subgraph GPU1["GPU Node 0 (Standard_ND96asr_v4)"]
+            CTRD1[ContainerD v2.2.1 + NRI]
+            DRIVER1[NVIDIA Driver 580.x]
+            DRA_KP1[DRA Kubelet Plugin]
+            DRANET1[dranet NRI Plugin]
+            RS_GPU1[ResourceSlice<br/>gpu.nvidia.com<br/>8x A100]
+            RS_NET1[ResourceSlice<br/>dra.net<br/>8x IB + 1x RoCE]
+        end
+
+        subgraph GPU2["GPU Node 1 (Standard_ND96asr_v4)"]
+            CTRD2[ContainerD v2.2.1 + NRI]
+            DRIVER2[NVIDIA Driver 580.x]
+            DRA_KP2[DRA Kubelet Plugin]
+            DRANET2[dranet NRI Plugin]
+            RS_GPU2[ResourceSlice<br/>gpu.nvidia.com<br/>8x A100]
+            RS_NET2[ResourceSlice<br/>dra.net<br/>8x IB + 1x RoCE]
+        end
+    end
+
+    GPU_OP --> DRIVER1 & DRIVER2
+    DRA_CTRL --> DRA_KP1 & DRA_KP2
+    DRA_KP1 --> RS_GPU1
+    DRA_KP2 --> RS_GPU2
+    DRANET1 --> RS_NET1
+    DRANET2 --> RS_NET2
+    SCHED --> RS_GPU1 & RS_NET1 & RS_GPU2 & RS_NET2
