@@ -1,0 +1,9 @@
+gpuResourcesEnabledOverride: true
+image:
+  repository: ghcr.io/anson627/k8s-dra-driver-gpu
+  tag: test
+  pullPolicy: Always
+resources:
+  computeDomains:
+   enabled: false
+nvidiaDriverRoot: "/run/nvidia/driver"
