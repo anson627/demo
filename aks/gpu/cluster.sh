@@ -48,31 +48,28 @@ az aks get-credentials --resource-group ${RESOURCE_GROUP} \
     --name ${CLUSTER_NAME} \
     --admin \
     --overwrite-existing
-    
+
 kubectl apply -f containerd/
+kubectl rollout status daemonset/update-containerd -n kube-system --timeout=300s
 
-helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
-helm repo update
-
-helm install network-operator nvidia/network-operator \
-    --set nfd.enabled=false \
-    --set operator.ofedDriver.deploy=true \
-    --set sriovNetworkOperator.enabled=true \
-    --create-namespace \
-    --namespace nvidia \
-    --wait
-
-helm install gpu-operator nvidia/gpu-operator \
-    --set driver.rdma.enabled=true \
-    --set driver.mofed.enabled=true \
-    --set devicePlugin.enabled=false \
-    --create-namespace \
-    --namespace nvidia \
-    --wait
-
-helm install dra-driver nvidia/nvidia-dra-driver-gpu \
-    --version=25.8.0 \
-    -f dra/values.yaml \
-    --create-namespace \
-    --namespace nvidia \
-    --wait
+sleep 10
+for pod in $(kubectl get pods -n kube-system -l app=update-containerd -o jsonpath='{.items[*].metadata.name}'); do
+    node=$(kubectl get pod "${pod}" -n kube-system -o jsonpath='{.spec.nodeName}')
+    max_retries=5
+    retry=0
+    version=""
+    while (( retry < max_retries )); do
+        version=$(kubectl exec -n kube-system "${pod}" -- chroot /host containerd -version 2>/dev/null || true)
+        if [[ "${version}" == *"2.2.1"* ]]; then
+            break
+        fi
+        retry=$((retry + 1))
+        echo "  ${node}: retry ${retry}/${max_retries} (got: ${version})"
+        sleep 5
+    done
+    echo "  ${node}: ${version}"
+    if [[ "${version}" != *"2.2.1"* ]]; then
+        echo "ERROR: ${node} has unexpected containerd version after ${max_retries} retries: ${version}"
+        exit 1
+    fi
+done
