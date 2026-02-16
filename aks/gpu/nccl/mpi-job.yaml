@@ -1,0 +1,85 @@
+apiVersion: kubeflow.org/v2beta1
+kind: MPIJob
+metadata:
+  name: nccl-test-dra
+spec:
+  slotsPerWorker: 8
+  mpiReplicaSpecs:
+    Launcher:
+      replicas: 1
+      template:
+        spec:
+          containers:
+          - name: nccl
+            image: telescope.azurecr.io/aks-rdma-infiniband/nccl-tests:amd64
+            command: ["/bin/bash", "-c"]
+            args:
+            - |
+              mpirun -np 16 \
+                --allow-run-as-root \
+                -bind-to none \
+                -x LD_LIBRARY_PATH \
+                -x NCCL_DEBUG=INFO \
+                -x NCCL_SOCKET_IFNAME=eth0 \
+                -x NCCL_IB_HCA=mlx5 \
+                -x NCCL_NET_GDR_LEVEL=SYS \
+                /opt/nccl_tests/build/all_reduce_perf -b 512M -e 8G -f 2 -g 1
+            env:
+            - name: OMPI_ALLOW_RUN_AS_ROOT
+              value: "1"
+            - name: OMPI_ALLOW_RUN_AS_ROOT_CONFIRM
+              value: "1"
+            resources:
+              requests:
+                cpu: 2
+                memory: 1208Mi
+            securityContext:
+              privileged: true
+          initContainers:
+          - name: init-limit
+            image: busybox:1.27.2
+            command: ["sh", "-c", "ulimit -Hl unlimited && ulimit -Sl unlimited"]
+            securityContext:
+              privileged: true
+    Worker:
+      replicas: 2
+      template:
+        spec:
+          automountServiceAccountToken: false
+          resourceClaims:
+          - name: gpu-nic-aligned
+            resourceClaimTemplateName: gpu-nic-aligned
+          containers:
+          - name: nccl
+            image: telescope.azurecr.io/aks-rdma-infiniband/nccl-tests:amd64
+            resources:
+              claims:
+              - name: gpu-nic-aligned
+              limits:
+                cpu: 90
+                memory: 850G
+              requests:
+                cpu: 90
+                memory: 850G
+            securityContext:
+              privileged: true
+            volumeMounts:
+            - mountPath: /dev/shm
+              name: dshm
+          enableServiceLinks: false
+          initContainers:
+          - name: init-limit
+            image: busybox:1.27.2
+            command: ["sh", "-c", "ulimit -Hl unlimited && ulimit -Sl unlimited"]
+            securityContext:
+              privileged: true
+          volumes:
+          - name: dshm
+            emptyDir:
+              medium: Memory
+          tolerations:
+          - key: "nvidia.com/gpu"
+            operator: "Exists"
+            effect: "NoSchedule"
+  runPolicy:
+    cleanPodPolicy: Running
