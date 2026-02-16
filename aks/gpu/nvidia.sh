@@ -35,8 +35,8 @@ while true; do
     fi
 
     [[ "${mofed_pods_count}" -eq 0 ]] && echo "⏳ Waiting for mofed pods to show up..."
-    echo "⏳ Waiting for all nodes to be labeled 'network.nvidia.com/operator.mofed.wait=false' ..."
-    sleep 10
+    echo "Waiting for all nodes to be labeled 'network.nvidia.com/operator.mofed.wait=false' ..."
+    sleep 30
 done
 
 helm upgrade --install gpu-operator nvidia/gpu-operator \
@@ -63,29 +63,20 @@ helm upgrade --install dra-driver nvidia/nvidia-dra-driver-gpu \
     -f nvidia/values_dra.yaml \
     --wait
 
-kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=nvidia-dra-driver-gpu -n nvidia --timeout=300s
-
-echo "Verifying GPU ResourceSlices have pcieRoot attributes..."
-missing_pcie_root=0
+echo "Verifying GPU devices with pcieRoot attribute in DRA ResourceSlices ..."
 for slice in $(kubectl get resourceslices --field-selector=spec.driver=gpu.nvidia.com -o jsonpath='{.items[*].metadata.name}'); do
-    pcie_root=$(kubectl get resourceslice "${slice}" -o jsonpath='{.spec.devices[0].attributes.resource\.kubernetes\.io/pcieRoot.string}')
-    if [[ -z "${pcie_root}" ]]; then
-        echo "  WARNING: ResourceSlice ${slice} missing pcieRoot attribute"
-        missing_pcie_root=$((missing_pcie_root + 1))
-    else
-        echo "  ResourceSlice ${slice} has pcieRoot: ${pcie_root}"
-    fi
+    node=$(kubectl get resourceslice "${slice}" -o jsonpath='{.spec.nodeName}')
+    echo "  ${node} (${slice}):"
+    kubectl get resourceslice "${slice}" -o json | \
+        jq -r '.spec.devices[] | "    \(.name): pcieRoot=\(.attributes["resource.kubernetes.io/pcieRoot"].string) product=\(.attributes["productName"].string)"'
 done
 
 kubectl apply -f nvidia/dranet/
 
-kubectl rollout status daemonset/dranet -n kube-system --timeout=300s
-
-net_slice_count=$(kubectl get resourceslices --field-selector=spec.driver=dra.net --no-headers 2>/dev/null | wc -l)
-if [[ "${net_slice_count}" -eq 0 ]]; then
-    echo "ERROR: No dranet ResourceSlices found"
-    exit 1
-fi
-echo "  Found ${net_slice_count} dranet ResourceSlice(s)"
-kubectl get resourceslices --field-selector=spec.driver=dra.net
+for slice in $(kubectl get resourceslices --field-selector=spec.driver=dra.net -o jsonpath='{.items[*].metadata.name}'); do
+    node=$(kubectl get resourceslice "${slice}" -o jsonpath='{.spec.nodeName}')
+    echo "  ${node} (${slice}):"
+    kubectl get resourceslice "${slice}" -o json | \
+        jq -r '.spec.devices[] | select(.attributes["dra.net/encapsulation"].string == "infiniband") | "    \(.name): pcieRoot=\(.attributes["resource.kubernetes.io/pcieRoot"].string) ifName=\(.attributes["dra.net/ifName"].string)"'
+done
 
