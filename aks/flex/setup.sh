@@ -9,7 +9,7 @@ if az group show -n "${RESOURCE_GROUP}" &>/dev/null; then
     echo "Resource group already exists."
 else
     echo "Resource group does not exist. Creating ..."
-    az group create -l "${LOCATION}" -n "${RESOURCE_GROUP}" --tags SkipAKSCluster=1 SkipASB_Audit=true SkipLinuxAzSecPack=true
+    az group create -l "${LOCATION}" -n "${RESOURCE_GROUP}"
 fi
 
 if az aks show -g "${RESOURCE_GROUP}" -n "${CLUSTER_NAME}" &>/dev/null; then
@@ -22,14 +22,13 @@ else
         -g "${RESOURCE_GROUP}" \
         -n "${CLUSTER_NAME}" \
         --tier standard \
-        --kubernetes-version 1.34.1 \
+        --kubernetes-version 1.34.2 \
         --enable-aad \
         --aad-admin-group-object-ids "$MY_USER_ID" \
         --network-plugin none \
         --disable-disk-driver \
         --disable-file-driver \
         --nodepool-name system \
-        --vm-set-type "VirtualMachines" \
         --node-vm-size "${SYSTEM_VM_SIZE}" \
         --node-count "${SYSTEM_POOL_SIZE}"
 fi
@@ -59,7 +58,8 @@ az aks get-credentials --resource-group $RESOURCE_GROUP \
 
 envsubst < config/node-bootstrapper-binding.yaml | kubectl apply -f -
 envsubst < config/node-role-binding.yaml | kubectl apply -f -
-    
+envsubst < config/node-auto-approve-csr.yaml | kubectl apply -f -
+
 # python3 setup.py \
 #   --resource-group "${RESOURCE_GROUP}" \
 #   --cluster-name "${CLUSTER_NAME}" \
