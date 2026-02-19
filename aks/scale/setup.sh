@@ -15,7 +15,6 @@ fi
 if az aks show -g ${RESOURCE_GROUP} -n ${CLUSTER_NAME} &>/dev/null; then
     echo "Managed cluster already exists."
 else
-    MY_USER_ID=$(az ad signed-in-user show --query id -o tsv)
     echo "Managed cluster does not exist. Creating ..."
     az aks create -l ${LOCATION} \
         -g ${RESOURCE_GROUP} \
@@ -26,7 +25,7 @@ else
         --disable-file-driver \
         --nodepool-name system \
         --enable-aad \
-        --aad-admin-group-object-ids "$MY_USER_ID" \
+        --aad-admin-group-object-ids "8a5603a8-2c60-49ab-bc28-a989b91e187d" \
         --node-vm-size ${SYSTEM_VM_SIZE} \
         --node-count ${SYSTEM_POOL_SIZE} \
         --network-plugin none \
@@ -34,112 +33,10 @@ else
         --nat-gateway-managed-outbound-ip-count 5
 fi
 
-if az network vnet show -g ${RESOURCE_GROUP} -n ${USER_POOL_VNET_NAME} &>/dev/null; then
-    echo "User pool VNet already exists."
-else
-    echo "Creating user pool VNet ..."
-    az network vnet create \
-        -g ${RESOURCE_GROUP} \
-        -n ${USER_POOL_VNET_NAME} \
-        --address-prefix 10.1.0.0/16 \
-        --subnet-name ${USER_POOL_SUBNET_NAME} \
-        --subnet-prefix 10.1.0.0/24
-fi
-
-if az network nsg show -g ${RESOURCE_GROUP} -n ${USER_POOL_NSG_NAME} &>/dev/null; then
-    echo "User pool NSG already exists."
-else
-    echo "Creating user pool NSG ..."
-    az network nsg create \
-        -g ${RESOURCE_GROUP} \
-        -n ${USER_POOL_NSG_NAME}
-    az network nsg rule create \
-        -g ${RESOURCE_GROUP} \
-        --nsg-name ${USER_POOL_NSG_NAME} \
-        -n AllowSSH \
-        --priority 1000 \
-        --access Allow \
-        --direction Inbound \
-        --protocol Tcp \
-        --destination-port-ranges 22
-fi
-
-az network vnet subnet update \
-    -g ${RESOURCE_GROUP} \
-    --vnet-name ${USER_POOL_VNET_NAME} \
-    -n ${USER_POOL_SUBNET_NAME} \
-    --network-security-group ${USER_POOL_NSG_NAME}
-
-if az identity show -g ${RESOURCE_GROUP} -n ${USER_POOL_MI_NAME} &>/dev/null; then
-    echo "User pool managed identity already exists."
-else
-    echo "Creating user pool managed identity ..."
-    az identity create \
-        -g ${RESOURCE_GROUP} \
-        -n ${USER_POOL_MI_NAME} \
-        -l ${LOCATION}
-fi
-
-USER_POOL_MI_ID=$(az identity show \
-    -g ${RESOURCE_GROUP} \
-    -n ${USER_POOL_MI_NAME} \
-    --query id -o tsv)
-
-if az vmss show -g ${RESOURCE_GROUP} -n ${USER_POOL_NAME} &>/dev/null; then
-    echo "User pool VMSS already exists."
-else
-    echo "Creating user pool VMSS ..."
-    USER_POOL_SUBNET_ID=$(az network vnet subnet show \
-        -g ${RESOURCE_GROUP} \
-        --vnet-name ${USER_POOL_VNET_NAME} \
-        -n ${USER_POOL_SUBNET_NAME} \
-        --query id -o tsv)
-    az vmss create \
-        -g ${RESOURCE_GROUP} \
-        -n ${USER_POOL_NAME} \
-        --image ${USER_POOL_IMAGE} \
-        --vm-sku ${USER_VM_SIZE} \
-        --instance-count ${USER_POOL_SIZE} \
-        --admin-username ${USER_POOL_ADMIN_USERNAME} \
-        --ssh-key-values ${USER_POOL_SSH_KEY_PATH} \
-        --assign-identity ${USER_POOL_MI_ID} \
-        --authentication-type ssh \
-        --orchestration-mode Uniform \
-        --platform-fault-domain-count 1 \
-        --public-ip-per-vm \
-        --load-balancer ""
-fi
-
-# Peer AKS VNet (in managed resource group) with user pool VNet
-AKS_MC_RG=$(az aks show -g ${RESOURCE_GROUP} -n ${CLUSTER_NAME} --query nodeResourceGroup -o tsv)
-AKS_VNET_NAME=$(az network vnet list -g ${AKS_MC_RG} --query '[0].name' -o tsv)
-AKS_VNET_ID=$(az network vnet show -g ${AKS_MC_RG} -n ${AKS_VNET_NAME} --query id -o tsv)
-USER_VNET_ID=$(az network vnet show -g ${RESOURCE_GROUP} -n ${USER_POOL_VNET_NAME} --query id -o tsv)
-
-if az network vnet peering show -g ${AKS_MC_RG} --vnet-name ${AKS_VNET_NAME} -n aks-to-user &>/dev/null; then
-    echo "AKS-to-user VNet peering already exists."
-else
-    echo "Creating AKS-to-user VNet peering ..."
-    az network vnet peering create \
-        -g ${AKS_MC_RG} \
-        --vnet-name ${AKS_VNET_NAME} \
-        -n aks-to-user \
-        --remote-vnet ${USER_VNET_ID} \
-        --allow-vnet-access
-fi
-
-if az network vnet peering show -g ${RESOURCE_GROUP} --vnet-name ${USER_POOL_VNET_NAME} -n user-to-aks &>/dev/null; then
-    echo "User-to-AKS VNet peering already exists."
-else
-    echo "Creating user-to-AKS VNet peering ..."
-    az network vnet peering create \
-        -g ${RESOURCE_GROUP} \
-        --vnet-name ${USER_POOL_VNET_NAME} \
-        -n user-to-aks \
-        --remote-vnet ${AKS_VNET_ID} \
-        --allow-vnet-access
-fi
-
+az aks get-credentials --resource-group ${RESOURCE_GROUP} \
+    --name ${CLUSTER_NAME} \
+    --admin \
+    --overwrite-existing
 
 AKS_RESOURCE_ID=$(az aks show \
   --resource-group "$RESOURCE_GROUP" \
@@ -150,78 +47,43 @@ AKS_RESOURCE_ID=$(az aks show \
 TENANT_ID=$(az account show \
   --query "tenantId" \
   --output tsv)
-  
-MI_PRINCIPAL_ID=$(az identity show \
-  -g "$RESOURCE_GROUP" \
-  -n "$USER_POOL_MI_NAME" \
-  --query "principalId" \
-  --output tsv)
 
-MI_CLIENT_ID=$(az identity show \
-  -g "$RESOURCE_GROUP" \
-  -n "$USER_POOL_MI_NAME" \
-  --query "clientId" \
-  --output tsv)
+# Generate bootstrap token
+TOKEN_ID=$(openssl rand -hex 3)
+TOKEN_SECRET=$(openssl rand -hex 8)
+BOOTSTRAP_TOKEN="${TOKEN_ID}.${TOKEN_SECRET}"
+EXPIRATION=$(date -u -v+24H +"%Y-%m-%dT%H:%M:%SZ")
 
-az role assignment create \
-    --assignee-object-id "$MI_PRINCIPAL_ID" \
-    --assignee-principal-type ServicePrincipal \
-    --role "Owner" \
-    --scope "$AKS_RESOURCE_ID"
+SERVER_URL=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
+CA_CERT_DATA=$(kubectl config view --minify --raw -o jsonpath='{.clusters[0].cluster.certificate-authority-data}')
 
-az aks get-credentials --resource-group ${RESOURCE_GROUP} \
-    --name ${CLUSTER_NAME} \
-    --admin \
-    --overwrite-existing
+# Create bootstrap token secret and RBAC bindings
+export TOKEN_ID TOKEN_SECRET EXPIRATION
+envsubst < config/bootstrap-token-secret.template.yaml | kubectl apply -f -
+kubectl apply -f config/node-bootstrapper-binding.yaml
+kubectl apply -f config/node-auto-approve-csr.yaml
 
-export TENANT_ID MI_PRINCIPAL_ID MI_CLIENT_ID SUBSCRIPTION LOCATION AKS_RESOURCE_ID
+# Generate cloud-init script
+export TENANT_ID SUBSCRIPTION LOCATION AKS_RESOURCE_ID BOOTSTRAP_TOKEN SERVER_URL CA_CERT_DATA
+envsubst < cloud-init.template.sh > cloud-init.sh
 
-kubectl apply -f - <<EOF
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: aks-flex-node-bootstrapper
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: system:node-bootstrapper
-subjects:
-- apiGroup: rbac.authorization.k8s.io
-  kind: User
-  name: $MI_PRINCIPAL_ID
-EOF
-
-kubectl apply -f - <<EOF
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: aks-flex-node-csr-approval
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: system:certificates.k8s.io:certificatesigningrequests:nodeclient
-subjects:
-- apiGroup: rbac.authorization.k8s.io
-  kind: User
-  name: $MI_PRINCIPAL_ID
-EOF
-
-kubectl apply -f - <<EOF
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: aks-flex-node-role
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: system:node
-subjects:
-- apiGroup: rbac.authorization.k8s.io
-  kind: Group
-  name: system:nodes
-- apiGroup: rbac.authorization.k8s.io
-  kind: User
-  name: $MI_PRINCIPAL_ID
-EOF
-
-envsubst < config.template.json > config.json
+# Create VMSS with cloud-init custom data
+if az vmss show -g ${RESOURCE_GROUP} -n ${USER_POOL_NAME} &>/dev/null; then
+    echo "User pool VMSS already exists."
+else
+    echo "Creating user pool VMSS ..."
+    az vmss create \
+        -g ${RESOURCE_GROUP} \
+        -n ${USER_POOL_NAME} \
+        --image ${USER_POOL_IMAGE} \
+        --vm-sku ${USER_VM_SIZE} \
+        --instance-count ${USER_POOL_SIZE} \
+        --admin-username ${USER_POOL_ADMIN_USERNAME} \
+        --ssh-key-values ${USER_POOL_SSH_KEY_PATH} \
+        --custom-data cloud-init.sh \
+        --authentication-type ssh \
+        --orchestration-mode Uniform \
+        --platform-fault-domain-count 1 \
+        --public-ip-per-vm \
+        --load-balancer ""
+fi
