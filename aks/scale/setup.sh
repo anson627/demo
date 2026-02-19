@@ -62,6 +62,7 @@ export TOKEN_ID TOKEN_SECRET EXPIRATION
 envsubst < config/bootstrap-token-secret.template.yaml | kubectl apply -f -
 kubectl apply -f config/node-bootstrapper-binding.yaml
 kubectl apply -f config/node-auto-approve-csr.yaml
+kubectl apply -f config/node-role-binding.yaml
 
 # Generate cloud-init script
 export TENANT_ID SUBSCRIPTION LOCATION AKS_RESOURCE_ID BOOTSTRAP_TOKEN SERVER_URL CA_CERT_DATA
