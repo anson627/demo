@@ -9,8 +9,11 @@
 SUBSCRIPTION=8ecadfc9-d1a3-4ea4-b844-0d9f87e4d7c8
 
 # H100
-LOCATION=southafricanorth
-USER_VM_SIZE=Standard_ND96isr_H100_v5
+# LOCATION=southafricanorth
+# USER_VM_SIZE=Standard_ND96isr_H100_v5
+
+LOCATION=swedencentral
+USER_VM_SIZE=standard_nd96isrf_h100_v5
 
 # GB200
 # LOCATION="centraluseuap"
@@ -37,8 +40,8 @@ USER_VM_SIZE=Standard_ND96isr_H100_v5
 # TIP_SESSION_ID=f6788df1-a5fd-47d2-b796-02c96fce1d3e
 # TIP_SESSION_ID=16469d8d-0c1a-4389-a35c-3f64d81e718b
 
-RESOURCE_GROUP=dra-test
-CLUSTER_NAME=dra-test
+RESOURCE_GROUP=aks-ai
+CLUSTER_NAME=flex
 SYSTEM_VM_SIZE=Standard_D16_v3
 SYSTEM_POOL_SIZE=3
 USER_POOL_SIZE=2
