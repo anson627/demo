@@ -19,6 +19,8 @@ spec:
         k8s-app: dranet
     spec:
       hostNetwork: true
+      nodeSelector:
+        agentpool: user
       tolerations:
       - operator: Exists
         effect: NoSchedule
@@ -30,7 +32,7 @@ spec:
         - /dranet
         - --v=4
         - --hostname-override=$(NODE_NAME)
-        image: ghcr.io/anson627/dranet:test
+        image: registry.k8s.io/networking/dranet:stable
         env:
         - name: NODE_NAME
           valueFrom:
