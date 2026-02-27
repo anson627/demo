@@ -26,7 +26,7 @@ else
         --nodepool-name system \
         --node-vm-size ${SYSTEM_VM_SIZE} \
         --node-count ${SYSTEM_POOL_SIZE} \
-        --network-plugin none
+        --network-plugin azure
 fi
 
 if az aks nodepool show --resource-group ${RESOURCE_GROUP} --cluster-name ${CLUSTER_NAME} --name user &>/dev/null; then
@@ -75,4 +75,3 @@ for pod in $(kubectl get pods -n kube-system -l app=update-containerd -o jsonpat
     fi
 done
 
-cilium install --version 1.19.1 --set azure.resourceGroup="${RESOURCE_GROUP}"

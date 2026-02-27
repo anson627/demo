@@ -32,7 +32,8 @@ spec:
         - /dranet
         - --v=4
         - --hostname-override=$(NODE_NAME)
-        image: registry.k8s.io/networking/dranet:stable
+        # image: registry.k8s.io/networking/dranet:stable
+        image: ghcr.io/anson627/dranet:test
         env:
         - name: NODE_NAME
           valueFrom:

@@ -3,7 +3,7 @@ kind: MPIJob
 metadata:
   name: nccl-test-dra
 spec:
-  slotsPerWorker: 8
+  slotsPerWorker: 4
   mpiReplicaSpecs:
     Launcher:
       replicas: 1
@@ -15,32 +15,20 @@ spec:
             command: ["/bin/bash", "-c"]
             args:
             - |
-              mpirun -np 16 \
+              sleep 5
+              mpirun -np 8 \
                 --allow-run-as-root \
                 -bind-to none \
                 -x LD_LIBRARY_PATH \
                 -x NCCL_DEBUG=INFO \
                 -x NCCL_SOCKET_IFNAME=eth0 \
-                -x NCCL_IB_HCA=mlx5 \
-                -x NCCL_NET_GDR_LEVEL=SYS \
+                -x NCCL_IB_DISABLE=0 \
+                -x NCCL_SHM_DISABLE=1 \
+                -x NCCL_MNNVL_ENABLE=0 \
+                -x NCCL_NVLS_ENABLE=0 \
+                -x NCCL_NET_GDR_LEVEL=PHB \
+                -x NCCL_IB_DATA_DIRECT=0 \
                 /opt/nccl_tests/build/all_reduce_perf -b 512M -e 8G -f 2 -g 1 -c 0
-            env:
-            - name: OMPI_ALLOW_RUN_AS_ROOT
-              value: "1"
-            - name: OMPI_ALLOW_RUN_AS_ROOT_CONFIRM
-              value: "1"
-            resources:
-              requests:
-                cpu: 2
-                memory: 1208Mi
-            securityContext:
-              privileged: true
-          initContainers:
-          - name: init-limit
-            image: busybox:1.27.2
-            command: ["sh", "-c", "ulimit -Hl unlimited && ulimit -Sl unlimited"]
-            securityContext:
-              privileged: true
     Worker:
       replicas: 2
       template:
@@ -49,34 +37,27 @@ spec:
           resourceClaims:
           - name: gpu-nic-aligned
             resourceClaimTemplateName: gpu-nic-aligned
+          volumes:
+          - name: dshm
+            emptyDir:
+              medium: Memory
+              sizeLimit: 1Gi
+          - name: infiniband
+            hostPath:
+              path: /dev/infiniband
           containers:
           - name: nccl
             image: ghcr.io/coreweave/nccl-tests:12.9.1-devel-ubuntu24.04-nccl2.29.2-1-d73ec07
             resources:
               claims:
               - name: gpu-nic-aligned
-              limits:
-                cpu: 90
-                memory: 850G
-              requests:
-                cpu: 90
-                memory: 850G
             securityContext:
               privileged: true
             volumeMounts:
-            - mountPath: /dev/shm
-              name: dshm
-          enableServiceLinks: false
-          initContainers:
-          - name: init-limit
-            image: busybox:1.27.2
-            command: ["sh", "-c", "ulimit -Hl unlimited && ulimit -Sl unlimited"]
-            securityContext:
-              privileged: true
-          volumes:
-          - name: dshm
-            emptyDir:
-              medium: Memory
+            - name: dshm
+              mountPath: /dev/shm
+            - name: infiniband
+              mountPath: /dev/infiniband
           tolerations:
           - key: "nvidia.com/gpu"
             operator: "Exists"
