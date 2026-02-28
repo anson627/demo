@@ -9,9 +9,14 @@ spec:
       - name: gpu
         exactly:
           deviceClassName: gpu.nvidia.com
-          count: 4
+          count: 1
+          selectors:
+          - cel:
+              expression: 'device.attributes["resource.kubernetes.io"]["pciBusID"] == "0008:06:00.0"'
       - name: nic
         exactly:
           deviceClassName: dranet.net
-          count: 4
-
+          count: 1
+          selectors:
+          - cel:
+              expression: 'device.attributes["dra.net"]["pciAddress"] == "0101:00:00.0"'

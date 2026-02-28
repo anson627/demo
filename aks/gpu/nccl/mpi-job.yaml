@@ -3,7 +3,7 @@ kind: MPIJob
 metadata:
   name: nccl-test-dra
 spec:
-  slotsPerWorker: 4
+  slotsPerWorker: 1
   mpiReplicaSpecs:
     Launcher:
       replicas: 1
@@ -16,7 +16,7 @@ spec:
             args:
             - |
               sleep 5
-              mpirun -np 8 \
+              mpirun -np 2 \
                 --allow-run-as-root \
                 -bind-to none \
                 -x LD_LIBRARY_PATH \
@@ -33,15 +33,19 @@ spec:
       replicas: 2
       template:
         spec:
+          affinity:
+            podAntiAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+              - labelSelector:
+                  matchLabels:
+                    training.kubeflow.org/job-name: nccl-test-dra
+                    training.kubeflow.org/job-role: worker
+                topologyKey: kubernetes.io/hostname
           automountServiceAccountToken: false
           resourceClaims:
           - name: gpu-nic-aligned
             resourceClaimTemplateName: gpu-nic-aligned
           volumes:
-          - name: dshm
-            emptyDir:
-              medium: Memory
-              sizeLimit: 1Gi
           - name: infiniband
             hostPath:
               path: /dev/infiniband
@@ -54,13 +58,9 @@ spec:
             securityContext:
               privileged: true
             volumeMounts:
-            - name: dshm
-              mountPath: /dev/shm
             - name: infiniband
               mountPath: /dev/infiniband
           tolerations:
           - key: "nvidia.com/gpu"
             operator: "Exists"
             effect: "NoSchedule"
-  runPolicy:
-    cleanPodPolicy: Running
