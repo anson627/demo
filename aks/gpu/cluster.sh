@@ -29,19 +29,19 @@ else
         --network-plugin azure
 fi
 
-if az aks nodepool show --resource-group ${RESOURCE_GROUP} --cluster-name ${CLUSTER_NAME} --name user &>/dev/null; then
+if az aks nodepool show --resource-group ${RESOURCE_GROUP} --cluster-name ${CLUSTER_NAME} --name ${USER_POOL_NAME} &>/dev/null; then
     echo "User pool already exists."
 else
     # --aks-custom-headers "AKSHTTPCustomFeatures=Microsoft.ContainerService/UseCustomizedOSImage,OSImageSubscriptionID=${IMAGE_SUB_ID},OSImageResourceGroup=${IMAGE_RG},OSImageGallery=${IMAGE_GALLERY},OSImageName=${IMAGE_NAME},OSImageVersion=${IMAGE_VERSION}" \
+    # --tags "TipNode.SessionId=${TIP_SESSION_ID}" \
     echo "User pool does not exist. Creating ..."
      az aks nodepool add \
         --resource-group ${RESOURCE_GROUP} \
         --cluster-name ${CLUSTER_NAME} \
-        --name user \
+        --name ${USER_POOL_NAME} \
         --node-vm-size ${USER_VM_SIZE} \
         --node-count ${USER_POOL_SIZE} \
         --os-sku Ubuntu2404 \
-        --tags "TipNode.SessionId=${TIP_SESSION_ID}" \
         --gpu-driver none
 fi
 
@@ -49,29 +49,3 @@ az aks get-credentials --resource-group ${RESOURCE_GROUP} \
     --name ${CLUSTER_NAME} \
     --admin \
     --overwrite-existing
-
-kubectl apply -f containerd/
-kubectl rollout status daemonset/update-containerd -n kube-system --timeout=300s
-
-sleep 10
-for pod in $(kubectl get pods -n kube-system -l app=update-containerd -o jsonpath='{.items[*].metadata.name}'); do
-    node=$(kubectl get pod "${pod}" -n kube-system -o jsonpath='{.spec.nodeName}')
-    max_retries=5
-    retry=0
-    version=""
-    while (( retry < max_retries )); do
-        version=$(kubectl exec -n kube-system "${pod}" -- chroot /host containerd -version 2>/dev/null || true)
-        if [[ "${version}" == *"2.2.1"* ]]; then
-            break
-        fi
-        retry=$((retry + 1))
-        echo "  ${node}: retry ${retry}/${max_retries} (got: ${version})"
-        sleep 5
-    done
-    echo "  ${node}: ${version}"
-    if [[ "${version}" != *"2.2.1"* ]]; then
-        echo "ERROR: ${node} has unexpected containerd version after ${max_retries} retries: ${version}"
-        exit 1
-    fi
-done
-

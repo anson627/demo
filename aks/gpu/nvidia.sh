@@ -2,6 +2,31 @@
 
 set -eo pipefail
 
+kubectl apply -f containerd/
+kubectl rollout status daemonset/update-containerd -n kube-system --timeout=300s
+
+sleep 10
+for pod in $(kubectl get pods -n kube-system -l app=update-containerd -o jsonpath='{.items[*].metadata.name}'); do
+    node=$(kubectl get pod "${pod}" -n kube-system -o jsonpath='{.spec.nodeName}')
+    max_retries=5
+    retry=0
+    version=""
+    while (( retry < max_retries )); do
+        version=$(kubectl exec -n kube-system "${pod}" -- chroot /host containerd -version 2>/dev/null || true)
+        if [[ "${version}" == *"2.2.1"* ]]; then
+            break
+        fi
+        retry=$((retry + 1))
+        echo "  ${node}: retry ${retry}/${max_retries} (got: ${version})"
+        sleep 5
+    done
+    echo "  ${node}: ${version}"
+    if [[ "${version}" != *"2.2.1"* ]]; then
+        echo "ERROR: ${node} has unexpected containerd version after ${max_retries} retries: ${version}"
+        exit 1
+    fi
+done
+
 helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
 helm repo update
 
