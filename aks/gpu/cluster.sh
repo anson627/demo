@@ -29,20 +29,33 @@ else
         --network-plugin azure
 fi
 
-if az aks nodepool show --resource-group ${RESOURCE_GROUP} --cluster-name ${CLUSTER_NAME} --name ${USER_POOL_NAME} &>/dev/null; then
-    echo "User pool already exists."
+if az aks nodepool show --resource-group ${RESOURCE_GROUP} --cluster-name ${CLUSTER_NAME} --name cpu &>/dev/null; then
+    echo "CPU pool already exists."
 else
-    # --aks-custom-headers "AKSHTTPCustomFeatures=Microsoft.ContainerService/UseCustomizedOSImage,OSImageSubscriptionID=${IMAGE_SUB_ID},OSImageResourceGroup=${IMAGE_RG},OSImageGallery=${IMAGE_GALLERY},OSImageName=${IMAGE_NAME},OSImageVersion=${IMAGE_VERSION}" \
-    # --tags "TipNode.SessionId=${TIP_SESSION_ID}" \
-    echo "User pool does not exist. Creating ..."
-     az aks nodepool add \
+    echo "CPU pool does not exist. Creating ..."
+    az aks nodepool add \
         --resource-group ${RESOURCE_GROUP} \
         --cluster-name ${CLUSTER_NAME} \
-        --name ${USER_POOL_NAME} \
+        --name cpu \
+        --node-vm-size Standard_D16_v3 \
+        --node-count 0
+fi
+
+if az aks nodepool show --resource-group ${RESOURCE_GROUP} --cluster-name ${CLUSTER_NAME} --name gpu &>/dev/null; then
+    echo "GPU pool already exists."
+else
+    # --aks-custom-headers "AKSHTTPCustomFeatures=Microsoft.ContainerService/UseCustomizedOSImage,OSImageSubscriptionID=${IMAGE_SUB_ID},OSImageResourceGroup=${IMAGE_RG},OSImageGallery=${IMAGE_GALLERY},OSImageName=${IMAGE_NAME},OSImageVersion=${IMAGE_VERSION}" \
+    echo "GPU pool does not exist. Creating ..."
+    az aks nodepool add \
+        --resource-group ${RESOURCE_GROUP} \
+        --cluster-name ${CLUSTER_NAME} \
+        --name gpu \
         --node-vm-size ${USER_VM_SIZE} \
-        --node-count ${USER_POOL_SIZE} \
+        --node-count 0 \
+        --node-osdisk-type Managed \
         --os-sku Ubuntu2404 \
-        --gpu-driver none
+        --tags "TipNode.SessionId=${TIP_SESSION_ID}" \
+        --labels nvidia.com/gpu.present=true
 fi
 
 az aks get-credentials --resource-group ${RESOURCE_GROUP} \

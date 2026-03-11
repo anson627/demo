@@ -4,12 +4,15 @@
 # ACS Test
 SUBSCRIPTION=8ecadfc9-d1a3-4ea4-b844-0d9f87e4d7c8
 
+# Upstream E2E
+# SUBSCRIPTION=ff05f55d-22b5-44a7-b704-f9a8efd493ed
+
 # A100
 # LOCATION=eastus
 # USER_VM_SIZE=Standard_ND96asr_v4
 
-LOCATION=southcentralus
-USER_VM_SIZE=Standard_ND96asr_v4
+# LOCATION=southcentralus
+# USER_VM_SIZE=Standard_ND96asr_v4
 
 # H100
 # LOCATION=koreacentral
@@ -26,8 +29,8 @@ USER_VM_SIZE=Standard_ND96asr_v4
 # USER_VM_SIZE=Standard_ND128isr_NDR_GB200_v6
 
 # GB300
-# LOCATION="eastus2euap"
-# USER_VM_SIZE=Standard_ND128isr_GB300_v6
+LOCATION="eastus2euap"
+USER_VM_SIZE=Standard_ND128isr_GB300_v6
 
 # Prod Image
 # IMAGE_SUB_ID=109a5e88-712a-48ae-9078-9ca8b3c81345
@@ -43,11 +46,9 @@ USER_VM_SIZE=Standard_ND96asr_v4
 # IMAGE_NAME=2404gen2arm64gb200containerd
 # IMAGE_VERSION=1.1.319
 
-TIP_SESSION_ID=5059074a-6e84-4c27-a46b-c26f1df040e4
+TIP_SESSION_ID=89cd3c39-2d15-444e-abaf-2eb36a8fc0da
 
-RESOURCE_GROUP=aks-ai
-CLUSTER_NAME=demo
+RESOURCE_GROUP=dra-test
+CLUSTER_NAME=dra
 SYSTEM_VM_SIZE=Standard_D16_v3
 SYSTEM_POOL_SIZE=3
-USER_POOL_SIZE=0
-USER_POOL_NAME=user
