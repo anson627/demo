@@ -29,8 +29,12 @@ SUBSCRIPTION=8ecadfc9-d1a3-4ea4-b844-0d9f87e4d7c8
 # USER_VM_SIZE=Standard_ND128isr_NDR_GB200_v6
 
 # GB300
-LOCATION="eastus2euap"
-USER_VM_SIZE=Standard_ND128isr_GB300_v6
+# LOCATION="eastus2euap"
+# USER_VM_SIZE=Standard_ND128isr_GB300_v6
+
+# MI300
+LOCATION=francecentral
+USER_VM_SIZE=Standard_ND96isr_MI300X_v5
 
 # Prod Image
 # IMAGE_SUB_ID=109a5e88-712a-48ae-9078-9ca8b3c81345

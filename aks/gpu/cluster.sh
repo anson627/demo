@@ -54,8 +54,7 @@ else
         --node-count 0 \
         --node-osdisk-type Managed \
         --os-sku Ubuntu2404 \
-        --tags "TipNode.SessionId=${TIP_SESSION_ID}" \
-        --labels nvidia.com/gpu.present=true
+        --gpu-driver none
 fi
 
 az aks get-credentials --resource-group ${RESOURCE_GROUP} \
