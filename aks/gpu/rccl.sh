@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set -eo pipefail
+
+source variables.sh
+
+az acr build \
+  --registry dratest \
+  --subscription "${SUBSCRIPTION}" \
+  --image rccl-tests:latest \
+  --file rccl/Dockerfile \
+  rccl/
+
+if ! kubectl get deployment mpi-operator -n mpi-operator &>/dev/null; then
+  kubectl apply --server-side -k "https://github.com/kubeflow/mpi-operator/manifests/overlays/standalone?ref=v0.7.0"
+  kubectl wait --for=condition=available deployment/mpi-operator -n mpi-operator --timeout=300s
+fi
+
+kubectl delete mpijob rccl-test --ignore-not-found
+kubectl wait --for=delete pod -l training.kubeflow.org/job-name=rccl-test --timeout=120s 2>/dev/null || true
+
+kubectl apply -f rccl/mpi-job.yaml
+sleep 5
+
+kubectl wait --for=condition=ready pod -l training.kubeflow.org/job-name=rccl-test,training.kubeflow.org/job-role=worker --timeout=300s
+
+kubectl wait --for=condition=ready pod -l training.kubeflow.org/job-name=rccl-test,training.kubeflow.org/job-role=launcher --timeout=300s
+
+launcher=$(kubectl get pods -l training.kubeflow.org/job-name=rccl-test,training.kubeflow.org/job-role=launcher -o jsonpath='{.items[0].metadata.name}')
+kubectl logs -f "${launcher}"
