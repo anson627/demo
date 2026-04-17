@@ -1,4 +1,4 @@
-# Large-Scale Chatbot Application Design
+# Chatbot Application Design
 
 Design for a conversational AI application like ChatGPT or Claude.ai.
 
@@ -290,7 +290,7 @@ This keeps prompt-building latency roughly bounded even as conversations grow to
 Attachments need a separate ingestion path from chat sends:
 1. Client calls `POST /v1/uploads` to obtain a presigned upload URL and `attachment_id`
 2. Client uploads the raw file directly to S3/GCS
-3. An async media pipeline validates MIME type and size, scans for malware, extracts OCR/text/thumbnails, and marks the attachment `ready`
+3. An async media pipeline validates MIME type and size, marks the attachment `ready`
 4. `POST /v1/chat/messages` can only reference attachments in `ready` state
 5. Prompt assembly passes normalized text, image references, or both to the inference gateway
 
@@ -428,6 +428,55 @@ This balances latency and cost:
 | Conversation search | Elasticsearch | Full-text search across message content |
 | Analytics / usage | ClickHouse | Columnar store for token usage, latency metrics |
 
+### Trade-Off: Relational Database (PostgreSQL) vs Wide-Column Store (Bigtable)
+
+The messages table dominates storage volume (3B rows/day, ~12TB/day growth) and sees the highest write throughput (100K rows/sec at peak). This makes it the critical decision point for storage engine selection.
+
+#### Access Patterns
+
+| Operation | Pattern | Frequency |
+|-----------|---------|-----------|
+| Insert user message + assistant placeholder | Single-user write, two rows in one transaction | 50K/s |
+| Finalize assistant message | Single-row update by `message_id` | 50K/s |
+| Load recent messages for prompt assembly | Range scan by `(conversation_id, created_at)` | 50K/s |
+| Load conversation history page | Range scan by `(conversation_id, created_at)` with cursor | 150K/s |
+| Idempotency dedup check | Point lookup by `(conversation_id, client_request_id)` | 50K/s |
+| Cross-user queries | Rare — admin analytics only | Negligible |
+
+All hot-path queries are scoped to a single user and conversation. No joins across users or conversations on the read/write path.
+
+#### Comparison
+
+| Dimension | PostgreSQL (sharded) | Bigtable / wide-column |
+|-----------|---------------------|----------------------|
+| **Write throughput** | 100K rows/s achievable across 32+ shards, but each shard is a full RDBMS — more operational overhead per shard | Designed for sustained M+ rows/s; horizontal scaling is automatic with no shard rebalancing |
+| **Read pattern** | Range scans with SQL indexes; flexible ad-hoc queries | Range scans on row-key prefix are fast; no secondary indexes — must design row keys carefully |
+| **Transactions** | Full ACID within a shard — user message + assistant placeholder insert atomically | Bigtable supports single-row atomicity only; multi-row atomicity requires application-level coordination |
+| **Schema flexibility** | Fixed schema, migrations required; strong typing catches bugs early | Schema-less column families; easy to add fields, but no enforcement — bugs surface at read time |
+| **Consistency** | Strong consistency within shard; cross-shard requires distributed transactions (avoided by user_id sharding) | Strong consistency per row; no cross-row transactions |
+| **Operational cost at scale** | Shard management, replica promotion, connection pooling, vacuum tuning — well-understood but labor-intensive | Fully managed (Cloud Bigtable); minimal ops, but vendor lock-in and fewer knobs when things go wrong |
+| **Cost at 12TB/day growth** | Storage is more expensive per GB; archival to cold storage (S3/Parquet) is manual but flexible | Cheaper raw storage; built-in TTL-based garbage collection and tiered storage |
+| **Ecosystem / tooling** | Rich SQL ecosystem, ORMs, migration tools, observability | Fewer tools; HBase-compatible API but limited query expressiveness |
+| **Relational integrity** | Foreign keys enforce conversation→message→attachment linkage at the database level | No foreign keys — referential integrity is the application's responsibility |
+
+#### Why PostgreSQL wins for this workload
+
+1. **Transactional message sends**: the idempotent send flow inserts a user message and an assistant placeholder in a single transaction, then updates the placeholder on completion. This two-phase write is natural in PostgreSQL and awkward without multi-row transactions.
+
+2. **Access patterns are already shard-friendly**: every query is scoped to a single `user_id`, so sharded PostgreSQL behaves like a key-value store for routing purposes while retaining SQL flexibility for conversation history pagination, filtering, and ad-hoc debugging.
+
+3. **Schema enforcement matters for correctness**: message status transitions (`streaming → completed → failed`), foreign key linkage to attachments, and the partial unique index on `(conversation_id, client_request_id)` all catch bugs at the database level rather than in application code.
+
+4. **Operational familiarity**: PostgreSQL failure modes, replication lag behavior, and performance tuning are well-documented. The team can reason about query plans, connection pool sizing, and vacuum pressure with standard tooling.
+
+#### When to reconsider Bigtable
+
+- **Storage cost dominates**: if archival to cold storage becomes operationally painful or the 12TB/day growth makes PostgreSQL storage prohibitively expensive, Bigtable's built-in TTL and tiered storage reduce that burden.
+- **Write throughput exceeds shard headroom**: if peak writes grow well beyond what 32-64 PostgreSQL shards can absorb (for example 10x growth to 1M rows/s), Bigtable's auto-scaling avoids repeated shard-split operations.
+- **Access patterns simplify further**: if the product moves away from branching (`parent_message_id`), attachment linkage, and complex status transitions, the relational guarantees become less valuable and a simpler row-key-based model is sufficient.
+
+A hybrid approach is also viable: keep PostgreSQL for users, conversations, and recent messages (hot data with transactional requirements), and move completed messages older than N days to Bigtable or a columnar store for cheap long-term retention with range-scan access.
+
 ### Sharding Strategy
 
 Shard PostgreSQL by `user_id` (consistent hashing):
@@ -513,32 +562,14 @@ History / sidebar reads: ~150K QPS (3:1 read:write vs user turns)
 - Redis absorbs hot-path reads (conversation list, recent messages, replay buffers)
 - Archive messages older than 1 year to cold storage (S3 + Parquet) with on-demand rehydration
 
-### Multi-Region
-
-```
-┌─────────┐     ┌─────────┐     ┌─────────┐
-│ US-East │     │ EU-West │     │ AP-SE   │
-│         │     │         │     │         │
-│ Web+DB  │◄───►│ Web+DB  │◄───►│ Web+DB  │
-│ GPU Pool│     │ GPU Pool│     │ GPU Pool│
-└─────────┘     └─────────┘     └─────────┘
-     ▲               ▲               ▲
-     └───── Global DNS (latency-based routing) ─────┘
-```
-
-- Each region has independent web, database, and GPU pools
-- User data is region-pinned (GDPR compliance for EU)
-- Cross-region GPU overflow: if one region is GPU-saturated, route inference to another region (adds latency but avoids queue buildup)
-
 ### Reliability
 
 | Failure | Mitigation |
 |---------|------------|
 | GPU node dies mid-generation | Inference gateway retries on a different node when possible; client retries with the same `client_request_id` + `Last-Event-ID`, and the server replays buffered events or returns the persisted partial/final state |
-| Database shard down | Promote read replica to primary (automated failover) |
-| Redis down | If Redis is only used for replay buffers / shared admission state, fall back to local in-memory queues and database reads; slightly lower resiliency but the chat path still works |
-| Full region outage | DNS failover to nearest region; user data replicated async |
 | GPU capacity exhausted | Queue with estimated wait time shown to user; prioritize paid tier |
+| Database shard down | Promote read replica to primary (automated failover) |
+| Cahe down | If Redis is only used for replay buffers / shared admission state, fall back to local in-memory queues and database reads; slightly lower resiliency but the chat path still works |
 
 ### Cost Optimization
 
