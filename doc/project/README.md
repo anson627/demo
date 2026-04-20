@@ -101,32 +101,25 @@ This layer is intentionally generic: the essential capability is analytical stor
 
 Rather than a single static architecture, this platform is best understood through reusable scenario patterns. Each scenario combines the same core lifecycle with different benchmark drivers, control loops, and telemetry surfaces.
 
-### Example 1: Ray Scheduling and Control Plane Scale on Virtual GPU Nodes
+### Example 1: Job Scheduling and Control Plane Scale on Virtual GPU Nodes
 
-This scenario combines Ray workload scheduling with direct control-plane scale testing. A load generator submits Ray jobs at scale, an operator reconciles them into cluster resources, and KWOK-backed virtual GPU nodes absorb the scheduling load. The goal is to measure API responsiveness, scheduling throughput, reconciliation behavior, and job lifecycle progress without requiring physical GPUs.
+This scenario combines workload scheduling with direct control-plane scale testing. A load generator submits jobs at scale, an operator reconciles them into cluster resources, and KWOK-backed virtual GPU nodes absorb the scheduling load. The goal is to measure API responsiveness, scheduling throughput, reconciliation behavior, and job lifecycle progress without requiring physical GPUs.
 
 ```text
- +-------------------+      trigger workload      +--------------------+
- | workflow engine   | -------------------------> | clusterloader2     |
- | scenario runner   |                            | load generator     |
- +-------------------+                            +---------+----------+
-                                                             |
-                                                             | submit test jobs
-                                                             v
-                                            +-----------------------------------+
-                                            | Kubernetes Control Plane          |
-                                            +-----------------------------------+
-                                               ^            ^               ^
-                                               |            |               |
-                                manage jobs    |            | create nodes  | assign pods
-                                               |            |               |
-                            +--------------------+   +-----+-----+-----+   +------------------+
-                            | kuberay-operator   |   | kwok-controller |   | virtual GPU node |
-                            | Ray control loop   |   | node simulator  |   | kwok-gpu-node-*  |
-                            +--------------------+   +-----------+-----+   +------------------+
-                                               |
-                                               | scrape metrics
-                                               v
+ +-------------------+      manage cluster       +-----------------------------------+
+ | workflow engine   | ------------------------> | Kubernetes Control Plane          |
+ | scenario runner   |                           +-----------------------------------+
+ +---------+---------+                              ^            ^
+           |                                        |            |
+           | deploy workload                        | create nodes| assign pods
+           v                                        |            |
+ +--------------------+                             |   +------------------+   +------------------+
+ | clusterloader2     | -- submit test jobs ------> |   | kwok-controller  |   | virtual GPU node |
+ | load generator     |                             |   | node simulator   |   | kwok-gpu-node-*  |
+ +--------------------+                             |   +--------+---------+   +------------------+
+                                                   |
+                                                   | scrape metrics
+                                                   v
                             +--------------------------------------+
                             | telemetry publisher                  |
                             | control plane benchmark data         |
@@ -161,9 +154,9 @@ Key behaviors:
 This scenario focuses on the data plane. It measures whether network topology, NIC-to-GPU affinity, and node placement policies are sufficient for distributed AI workloads. It combines `iperf` for inter-node TCP/UDP characterization with GPU collective benchmarks for distributed training communication behavior.
 
 ```text
- +-------------------+      deploy workload       +----------------------+
+ +-------------------+      submit test job       +----------------------+
  | workflow engine   | -------------------------> | Kubernetes Control   |
- | scenario runner   |                            | Plane                |
+ | scenario runner   | -- manage cluster -------> | Plane                |
  +-------------------+                            +----------+-----------+
                                                               |
                                                               | schedule benchmark pods
