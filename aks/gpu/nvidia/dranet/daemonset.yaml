@@ -20,7 +20,7 @@ spec:
     spec:
       hostNetwork: true
       nodeSelector:
-        agentpool: user
+        agentpool: gpu
       tolerations:
       - operator: Exists
         effect: NoSchedule
@@ -32,8 +32,9 @@ spec:
         - /dranet
         - --v=4
         - --hostname-override=$(NODE_NAME)
+        - --move-ib-interfaces=false
         # image: registry.k8s.io/networking/dranet:stable
-        image: ghcr.io/anson627/dranet:test
+        image: ghcr.io/anson627/dranet:latest
         imagePullPolicy: Always
         env:
         - name: NODE_NAME
