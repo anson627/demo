@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /Users/ansonqian/demo log --oneline -20)",
+      "Bash(git -C /Users/ansonqian/demo log --format=\"%H %s\")",
+      "Bash(git:*)",
+      "Bash(kubectl get pods -n kube-system -l app.kubernetes.io/name=node-feature-discovery 2>&1 || kubectl get pods -n kube-system | grep -i nfd 2>&1)",
+      "Bash(kubectl get pods -A | grep -i nfd 2>&1)",
+      "Bash(head:*)",
+      "Bash(kubectl get:*)",
+      "Bash(python3:*)",
+      "Bash(grep:*)",
+      "WebSearch",
+      "WebFetch(domain:docs.nebius.com)",
+      "Bash(nebius compute:*)",
+      "Bash(az aks:*)",
+      "Bash(aws iam put-user-policy:*)",
+      "Bash(aws iam list-access-keys:*)",
+      "Bash(aws iam update-access-key:*)",
+      "Bash(kubectl *)",
+      "Bash(ollama list *)",
+      "Bash(brew services *)",
+      "Bash(curl -s http://localhost:11434/api/generate -d '{\"model\":\"gemma4:31b\",\"keep_alive\":\"24h\"}')",
+      "Bash(ollama ps *)",
+      "Bash(az account show *)",
+      "Bash(az rest *)"
+    ]
+  }
+}
