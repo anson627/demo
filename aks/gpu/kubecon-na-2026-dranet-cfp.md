@@ -25,7 +25,7 @@
 
 ### Speakers
 - **Anson Qian**, Software Engineer, Azure Kubernetes Service — Microsoft
-- **Gaurav Ghildiyal** *(or Antonio Ojea)*, Software Engineer — Google
+- **Gaurav Ghildiyal**, Software Engineer — Google
 
 ### Session Description *(abstract)*
 
@@ -72,12 +72,12 @@ This material has **not** been presented before. It builds on — but substantia
 | Time | Section | Who |
 |------|---------|-----|
 | 0:00–0:04 | **The problem:** scarce accelerators + a fragmented RDMA landscape (IB vs RoCE vs each cloud's RoCE) makes AI workloads unportable | Anson |
-| 0:04–0:08 | **The solution:** make your AI stack cloud-neutral — one `ResourceClaimTemplate`, every cloud, with metrics ops teams already track | Google co-speaker |
+| 0:04–0:08 | **The solution:** make your AI stack cloud-neutral — one `ResourceClaimTemplate`, every cloud, with metrics ops teams already track | Gaurav |
 | 0:08–0:12 | **Live demo:** same YAML applied on AKS (InfiniBand) and GKE (RoCE) — identical scheduling, identical `/dev/infiniband` injection | Both |
 | 0:12–0:15 | **Training result in user metrics:** PyTorch DDP MFU on 2 × H100, NIC-aligned vs cross-NUMA (**32.83% → 36.06%**) | Anson |
 | 0:15–0:18 | **Inference result in user metrics:** NIXL **KV-cache transfer latency** on the prefill→decode path (**38.99 ms → 27.49 ms**, p99 included) | Anson |
 | 0:18–0:20 | NCCL bandwidth context: 2.2×–4.5× on ND GB300-v6 — the underlying lever behind both wins | Anson |
-| 0:20–0:26 | **The juicy details:** the DRANET cloud-provider driver interface, DRA + NRI hooks, GPU↔NIC scheduling constraints | Google co-speaker |
+| 0:20–0:26 | **The juicy details:** the DRANET cloud-provider driver interface, DRA + NRI hooks, GPU↔NIC scheduling constraints | Gaurav |
 | 0:26–0:29 | Gaps, roadmap, how to contribute (multi-tenancy, GPU NUMA attrs, heterogeneous fleets, driver-interface stability) | Both |
 | 0:29–0:30 | Q&A pointer + links to `examples/distributed_training` and `examples/nixl-kv-transfer` | Both |
 
@@ -85,7 +85,7 @@ This material has **not** been presented before. It builds on — but substantia
 
 **Anson Qian** is a Software Engineer on the Azure Kubernetes Service (AKS) team at Microsoft, focused on Kubernetes networking and AI infrastructure. He co-authored the AKS engineering blog post on DRANET and contributes to `kubernetes-sigs/dranet`, working on RDMA device discovery, topology-aware scheduling, and the upstream distributed-training-MFU and NIXL KV-transfer benchmark examples for distributed training and disaggregated inference on AKS.
 
-**Gaurav Ghildiyal** *(or Antonio Ojea)* is a Software Engineer at Google working on Kubernetes networking. A maintainer-level contributor to `kubernetes-sigs/dranet` and active in SIG-Network, *(he/they)* focuses on upstream DRA-for-networking design and its integration with GKE's AI infrastructure.
+**Gaurav Ghildiyal** is a Software Engineer at Google working on Kubernetes networking. A maintainer-level contributor to `kubernetes-sigs/dranet` and active in SIG-Network, he focuses on upstream DRA-for-networking design and its integration with GKE's AI infrastructure.
 
 ### Speaker Video / Audio Sample
 *(Attach a previous talk link or record a 2–3 min Loom: apply the **same** `h100-4gpu-4nic-numa-aligned` `ResourceClaimTemplate` on both an AKS and a GKE cluster — show identical scheduling decisions and identical `/dev/infiniband` injection. Then on AKS, flip to `h100-4gpu-4nic-numa-unaligned` to show the MFU launcher print `mfu_percent=36.06` vs `32.83` and the NIXL initiator print `avg_GBps=39.07` vs `27.54` — same YAML, different cloud, then same cloud, one selector flip.)*
@@ -94,7 +94,8 @@ This material has **not** been presented before. It builds on — but substantia
 
 ## 2. Pre-Submission Checklist
 
-- [ ] Co-speaker confirmed by **May 24, 2026** — primary: Gaurav Ghildiyal (`gauravkghildiyal@google.com`, `@gauravkghildiyal`); alternate: Antonio Ojea (`aojea@google.com`, `@aojea`)
+- [ ] Co-speaker confirmed by **May 24, 2026** — Gaurav Ghildiyal (`gauravkghildiyal@google.com`, `@gauravkghildiyal`)
+- [ ] Reviewer feedback incorporated — Antonio Ojea (`aojea@google.com`, `@aojea`); current draft already reflects his "cloud-neutral / end-user-first" framing and metrics guidance
 - [ ] Title finalized (≤ ~100 chars, inclusive language)
 - [ ] Abstract trimmed/tightened to Sched's word limit
 - [ ] Benefits-to-ecosystem paragraph reviewed by co-speaker
