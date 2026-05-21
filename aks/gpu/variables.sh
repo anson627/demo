@@ -2,13 +2,13 @@
 # SUBSCRIPTION=8643025a-c059-4a48-85d0-d76f51d63a74
 
 # ACS Test
-# SUBSCRIPTION=8ecadfc9-d1a3-4ea4-b844-0d9f87e4d7c8
+SUBSCRIPTION=8ecadfc9-d1a3-4ea4-b844-0d9f87e4d7c8
 
 # Upstream E2E
 # SUBSCRIPTION=ff05f55d-22b5-44a7-b704-f9a8efd493ed
 
 # GPU SIG
-SUBSCRIPTION=e941f974-6d4e-442b-a866-e8bdcdf428b4
+# SUBSCRIPTION=e941f974-6d4e-442b-a866-e8bdcdf428b4
 
 # A100
 # LOCATION=eastus
@@ -21,8 +21,8 @@ SUBSCRIPTION=e941f974-6d4e-442b-a866-e8bdcdf428b4
 # LOCATION=koreacentral
 # USER_VM_SIZE=Standard_ND96isr_H100_v5
 
-# LOCATION=southafricanorth
-# USER_VM_SIZE=Standard_ND96isr_H100_v5
+LOCATION=southafricanorth
+USER_VM_SIZE=Standard_ND96isr_H100_v5
 
 # LOCATION=swedencentral
 # USER_VM_SIZE=standard_nd96isrf_h100_v5
@@ -32,8 +32,8 @@ SUBSCRIPTION=e941f974-6d4e-442b-a866-e8bdcdf428b4
 # USER_VM_SIZE=Standard_ND128isr_NDR_GB200_v6
 
 # GB300
-LOCATION="eastus2euap"
-USER_VM_SIZE=Standard_ND128isr_GB300_v6
+# LOCATION="eastus2euap"
+# USER_VM_SIZE=Standard_ND128isr_GB300_v6
 
 # MI300
 # LOCATION=francecentral
