@@ -7,44 +7,7 @@
 
 ---
 
-## 1. Outreach Email to Co-Speaker
-
-> Draft for reaching out to **Gaurav Ghildiyal** (`@gauravkghildiyal`) or **Antonio Ojea** (`@aojea`) at Google as a co-speaker.
-
-**To:** gauravkghildiyal@google.com *(or aojea@google.com)*
-**Cc:** *(optional — Michael Zappa, msft teammates)*
-**Subject:** KubeCon NA 2026 — co-speak on DRANET? (CFP closes May 31)
-
-Hi Gaurav *(/ Antonio)*,
-
-Hope you're doing well! Following our collaboration on [kubernetes-sigs/dranet](https://github.com/kubernetes-sigs/dranet) over the past several months, I'd love to propose a joint talk at **KubeCon + CloudNativeCon NA 2026** (Nov 9–12, Salt Lake City) with you as co-speaker — one voice from Google, one from Azure.
-
-The pitch — incorporating your feedback and Gaurav's on metrics: **"How to make your AI stack cloud-neutral."** Lead with the end-user problem (scarce accelerators + a fragmented RDMA landscape that breaks portability across clouds), position DRANET as the unification layer, and only *then* go into the juicy bits — the cloud-provider driver interface, DRA + NRI hooks, the scheduling magic. KubeCon audiences respond to "solves my problem" much better than "here's how the project works," so this framing should land harder than a pure architecture walkthrough.
-
-On metrics: alongside MFU for training, I'm leaning on **KV-cache transfer latency** (avg + p50/p95/p99) for the inference side — that's what our NIXL benchmark measures directly, and it's what inference platform teams running disaggregated prefill/decode actually budget against.
-
-A few anchors we could build on:
-- **The portability story:** today, moving a training job or a disaggregated inference deployment between clouds means rewriting the network plumbing — InfiniBand on one cluster, RoCE on another, and even RoCE-on-AWS ≠ RoCE-on-Azure ≠ RoCE-on-GCP in terms of CNI hooks and device-plugin glue. DRANET's `DeviceClass` + per-cloud driver model lets the *same* `ResourceClaimTemplate` ("4 GPUs + 4 NUMA-aligned RDMA NICs") land identically on AKS, GKE, and EKS.
-- **The recent AKS blog post**, [*DRANET: Topology-Aware RDMA Optimization for AI on AKS*](https://blog.aks.azure.com/2026/04/01/dranet-rdma-optimization-for-ai-on-aks), which shows **2.2×–4.5× NCCL bandwidth improvements** on ND GB300-v6 via topology-aware GPU+NIC co-scheduling.
-- New end-to-end results from the upstream [`dranet/examples`](https://github.com/kubernetes-sigs/dranet/tree/main/examples) on 2 × H100 nodes — same YAML, only the NIC NUMA selector changes:
-  - **Distributed training:** BF16 PyTorch DDP MFU goes from **32.83% → 36.06%** (a **~10% relative MFU lift**, ~9% faster step time).
-  - **Disaggregated inference:** 1 GiB GPU→GPU KV-cache handoff drops from **38.99 ms → 27.49 ms** (**29.5% lower KV-transfer latency, 1.42× bandwidth**, p99 39.13 ms → 27.50 ms) — the exact prefill→decode transfer path on the inference critical path.
-- Your experience on the upstream DRA side and the SIG-Network direction.
-
-I've drafted a session proposal (title, abstract, benefits-to-ecosystem, outline) — attached / below. Happy to revise based on your angle, or pivot to a panel / tutorial format if you'd prefer.
-
-**Ask:** could you let me know by **~May 24** if you're up for co-speaking? That leaves a week of buffer before the **May 31** CFP deadline. Speakers can submit up to three sessions, so this wouldn't lock you out of other proposals.
-
-Either way, thank you for the partnership on DRANET — the project has come a long way because of it.
-
-Best,
-Anson Qian
-Software Engineer, Azure Kubernetes Service (AKS)
-Microsoft
-
----
-
-## 2. CFP Submission Draft
+## 1. CFP Submission Draft
 
 ### Track (primary)
 **AI Inference + Agentic** — with **Connectivity** as a strong secondary fit.
@@ -129,9 +92,9 @@ This material has **not** been presented before. It builds on — but substantia
 
 ---
 
-## 3. Pre-Submission Checklist
+## 2. Pre-Submission Checklist
 
-- [ ] Co-speaker (Gaurav or Antonio) confirmed by **May 24, 2026**
+- [ ] Co-speaker confirmed by **May 24, 2026** — primary: Gaurav Ghildiyal (`gauravkghildiyal@google.com`, `@gauravkghildiyal`); alternate: Antonio Ojea (`aojea@google.com`, `@aojea`)
 - [ ] Title finalized (≤ ~100 chars, inclusive language)
 - [ ] Abstract trimmed/tightened to Sched's word limit
 - [ ] Benefits-to-ecosystem paragraph reviewed by co-speaker
