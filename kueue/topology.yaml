@@ -1,7 +1,8 @@
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: Topology
 metadata:
-  name: kwok-topology
+  name: gb300-topology
 spec:
   levels:
-  - nodeLabel: type
+  - nodeLabel: topology.kubernetes.io/rack
+  - nodeLabel: kubernetes.io/hostname

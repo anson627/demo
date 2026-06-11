@@ -1,9 +1,9 @@
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: ClusterQueue
 metadata:
-  name: kwok-cluster-queue
+  name: gb300-cluster-queue
 spec:
-  cohort: kwok-cohort
+  cohort: gb300-cohort
   flavorFungibility:
     whenCanBorrow: Borrow
     whenCanPreempt: TryNextFlavor
@@ -18,13 +18,14 @@ spec:
   - coveredResources:
     - cpu
     - memory
+    - nvidia.com/gpu
     flavors:
-    - name: kwok-resource-flavor
+    - name: gb300-resource-flavor
       resources:
-      - borrowingLimit: "390144"
-        name: cpu
+      - name: cpu
         nominalQuota: "1000"
-      - borrowingLimit: 2568Ti
-        name: memory
+      - name: memory
         nominalQuota: 1Ti
+      - name: nvidia.com/gpu
+        nominalQuota: "576"
   stopPolicy: None

@@ -1,24 +1,29 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: sample-job
+  name: gb300-nv72-job
   namespace: default
   labels:
-    kueue.x-k8s.io/queue-name: kwok-local-queue
+    kueue.x-k8s.io/queue-name: gb300-local-queue
+  annotations:
+    kueue.x-k8s.io/podset-required-topology: topology.kubernetes.io/rack
 spec:
-  parallelism: 1
-  completions: 1
+  parallelism: 18
+  completions: 18
   suspend: true
   template:
     spec:
       containers:
-      - name: dummy-job
+      - name: nccl-test
         image: gcr.io/k8s-staging-perf-tests/sleep:v0.1.0
-        args: ["30s"]
+        args: ["300s"]
         resources:
           requests:
-            cpu: "1"
-            memory: "200Mi"
+            cpu: "128"
+            memory: "1800Gi"
+            nvidia.com/gpu: "4"
+          limits:
+            nvidia.com/gpu: "4"
       restartPolicy: Never
       nodeSelector:
-        type: kwok
+        accelerator: nvidia-gb300-nv72
